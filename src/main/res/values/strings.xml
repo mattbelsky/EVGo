@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">EV Route Planner App</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="tv_origin">Origin</string>
+    <string name="et_origin">Origin Address</string>
+    <string name="tv_destination">Destination</string>
+    <string name="et_destination">Destination Address</string>
+</resources>
