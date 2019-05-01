@@ -2,7 +2,11 @@ package com.example.evrouteplannerapp;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
@@ -10,6 +14,8 @@ import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -21,17 +27,55 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+import java.io.IOException;
+import java.net.URL;
+import java.util.List;
+import java.util.Locale;
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private static final int REQUEST_LOCATION_PERMISSION = 1;
     private GoogleMap mMap;
-    private FusedLocationProviderClient fusedLocationClient;
-    private Button bFindRoute;
+    private FusedLocationProviderClient mFusedLocationClient;
+    private Button mFindRouteButton;
+    private EditText mOriginAddressEditText;
+    private EditText mDestAddressEditText;
 
-    private View.OnClickListener bFindRouteClickListener = new View.OnClickListener() {
+    private View.OnClickListener findRouteButtonClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             // logic for passing origin/destination coords to google location api and getting a route
+            EditText etOrigin = findViewById(R.id.et_origin);
+            EditText etDestination = findViewById(R.id.et_destination);
+            String strOrigin = etOrigin.getText().toString();
+            String strDestination = etDestination.getText().toString();
+
+            if (strOrigin == null || strDestination == null) {
+                StringBuilder messageBuilder = new StringBuilder();
+                if (strOrigin == null)
+                    messageBuilder.append("Origin is empty. ");
+                if (strDestination == null)
+                    messageBuilder.append("Destination is empty.");
+                String message = messageBuilder.toString();
+                Toast.makeText(MapsActivity.this, message, Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            LatLng origin = getCoords(strOrigin);
+            LatLng destination = getCoords(strDestination);
+            URL url = ProxyApiUtil.buildUrl(origin, destination);
+            System.out.println(new QueryTask().execute(url));
+        }
+    };
+
+    private View.OnFocusChangeListener editTextFocusChangeListener = new View.OnFocusChangeListener() {
+        @Override
+        public void onFocusChange(View v, boolean hasFocus) {
+            if (hasFocus) {
+                EditText etView = (EditText) v;
+                etView.setHint("");
+                etView.setTextColor(Color.BLACK);
+            }
         }
     };
 
@@ -43,9 +87,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        bFindRoute = findViewById(R.id.b_find_route);
-        bFindRoute.setOnClickListener(bFindRouteClickListener);
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+        mFindRouteButton = findViewById(R.id.b_find_route);
+        mFindRouteButton.setOnClickListener(findRouteButtonClickListener);
+
+        mOriginAddressEditText = findViewById(R.id.et_origin);
+        mOriginAddressEditText.setOnFocusChangeListener(editTextFocusChangeListener);
+
+        mDestAddressEditText = findViewById(R.id.et_destination);
+        mDestAddressEditText.setOnFocusChangeListener(editTextFocusChangeListener);
     }
 
     /**
@@ -90,7 +141,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private double[] getLastKnownLocation() {
         final double[] latLng = new double[2];
 
-        fusedLocationClient.getLastLocation()
+        mFusedLocationClient.getLastLocation()
                 .addOnSuccessListener(this, new OnSuccessListener<Location>() {
                     @Override
                     public void onSuccess(Location location) {
@@ -103,5 +154,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return latLng;
     }
 
+    private LatLng getCoords(String locationName) {
+        int maxResults = 5; // decide how to handle results later
+        Geocoder geocoder = new Geocoder(this, Locale.US);
+        List<Address> addresses;
 
+        try {
+            addresses = geocoder.getFromLocationName(locationName, maxResults);
+        } catch (IOException e) {
+            return null;
+        }
+
+        Address address = addresses.get(0); // getting first result only for now -- will change later
+        double lat = address.getLatitude();
+        double lng = address.getLongitude();
+
+        return new LatLng(lat, lng);
+    }
+
+    protected class QueryTask extends AsyncTask<URL, Void, String> {
+        @Override
+        protected String doInBackground(URL... urls) {
+            String response = null;
+            try {
+                response = ProxyApiUtil.getResponseFromHttpUrl(urls[0]);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return response;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            System.out.println(s);
+        }
+    }
 }
