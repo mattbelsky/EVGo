@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
-import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
@@ -64,7 +63,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             LatLng origin = getCoords(strOrigin);
             LatLng destination = getCoords(strDestination);
             URL url = ProxyApiUtil.buildUrl(origin, destination);
-            System.out.println(new QueryTask().execute(url));
+            new QueryTask().execute(url);
         }
     };
 
@@ -170,23 +169,5 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         double lng = address.getLongitude();
 
         return new LatLng(lat, lng);
-    }
-
-    protected class QueryTask extends AsyncTask<URL, Void, String> {
-        @Override
-        protected String doInBackground(URL... urls) {
-            String response = null;
-            try {
-                response = ProxyApiUtil.getResponseFromHttpUrl(urls[0]);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return response;
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            System.out.println(s);
-        }
     }
 }

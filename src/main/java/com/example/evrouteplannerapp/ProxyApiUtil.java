@@ -13,7 +13,9 @@ import java.util.Scanner;
 
 public class ProxyApiUtil {
 
-    private final static String BASE_URL = "<url>";
+    /* Since the emulator is running behind a virtual router, 10.0.2.2 is a special address that is 
+     * required to reference the address 127.0.0.1 on the development machine. */
+    private final static String BASE_URL = "http://10.0.2.2:8080/routeplanner/go";
     private final static String START_LAT_PARAM_QUERY = "start_lat";
     private final static String START_LNG_PARAM_QUERY = "start_lng";
     private final static String END_LAT_PARAM_QUERY = "end_lat";
@@ -23,8 +25,8 @@ public class ProxyApiUtil {
     private final static String LEVEL_ID_QUERY = "level_id";
     private final static String MAX_RESULTS_QUERY = "max_results";
 
-    // Will be set in preferences. For now set as constants. Must be strings as appendQueryParameters()
-    // only accepts string parameters.
+    /* Will be set in preferences. For now set as constants. Must be strings as appendQueryParameters() 
+     * only accepts string parameters. */
     private final static String DISTANCE = "1";
     private final static String DISTANCE_UNIT = "2";
     private final static String LEVEL_ID = "3";
@@ -57,15 +59,14 @@ public class ProxyApiUtil {
     }
 
     public static String getResponseFromHttpUrl(URL url) throws IOException {
-        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-        try {
+	HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+        urlConnection.connect();
+	try {
             InputStream in = urlConnection.getInputStream();
-
             Scanner scanner = new Scanner(in);
             scanner.useDelimiter("\\A");
-
             boolean hasInput = scanner.hasNext();
-            if (hasInput)
+	    if (hasInput)
                 return scanner.next();
             else
                 return null;
