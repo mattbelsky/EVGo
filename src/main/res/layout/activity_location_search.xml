@@ -18,6 +18,7 @@
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/floatingActionButton"
+        android:src="@drawable/ic_search"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
@@ -28,7 +29,7 @@
         app:layout_constraintBottom_toTopOf="@id/rv_location_results"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/et_search_location"
-        app:srcCompat="@drawable/quantum_ic_search_grey600_24"/>
+        />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rv_location_results"
