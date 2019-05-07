@@ -17,7 +17,6 @@ import java.util.Locale;
 
 public class LocationSearchActivity extends AppCompatActivity {
 
-    private static final int NUM_ADDRESSES = 100;
     private EditText mSearchEditText;
     private FloatingActionButton mSearchButton;
     private RecyclerView mListAddressesRecyclerView;
@@ -31,6 +30,12 @@ public class LocationSearchActivity extends AppCompatActivity {
 
             String locationString = mSearchEditText.getText().toString();
             mAddresses = getAddresses(locationString);
+
+            // Creating the adapter and assigning it to the RecyclerView in the click listener ensures
+            // that the user has finished entering his search text and clicked the search button so
+            // that the list of addresses is not empty.
+            mLocationResultsRecyclerAdapter = new LocationResultsRecyclerAdapter(mAddresses);
+            mListAddressesRecyclerView.setAdapter(mLocationResultsRecyclerAdapter);
         }
     };
 
@@ -49,14 +54,11 @@ public class LocationSearchActivity extends AppCompatActivity {
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         mListAddressesRecyclerView.setLayoutManager(layoutManager);
         mListAddressesRecyclerView.setHasFixedSize(true);
-
-        mLocationResultsRecyclerAdapter = new LocationResultsRecyclerAdapter(NUM_ADDRESSES);
-
     }
 
     private List<Address> getAddresses(String locationString) {
 
-        int maxResults = 10; // See if this is an ideal number of results
+        int maxResults = 5;
         Geocoder geocoder = new Geocoder(this, Locale.US);
         List<Address> addresses;
 
