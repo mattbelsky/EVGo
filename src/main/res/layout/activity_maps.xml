@@ -1,45 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_height="match_parent"
-    android:layout_width="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
     android:orientation="vertical">
 
-    <EditText
-        android:id="@+id/et_origin"
-        style="@style/EditTexts"
+    <!--<fragment-->
+    <!--android:id="@+id/autocomplete_fragment_origin"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:name="com.google.android.libraries.places.widget.AutocompleteSupportFragment"-->
+    <!--app:layout_constraintTop_toTopOf="parent"-->
+    <!--app:layout_constraintBottom_toTopOf="@id/divider"-->
+    <!--/>-->
+
+    <!--<View-->
+    <!--android:id="@+id/divider"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="1dp"-->
+    <!--android:background="?android:attr/listDivider"-->
+    <!--app:layout_constraintTop_toBottomOf="@id/autocomplete_fragment_origin"-->
+    <!--app:layout_constraintBottom_toTopOf="@id/autocomplete_fragment_destination"/>-->
+
+    <!--<fragment-->
+    <!--android:id="@+id/autocomplete_fragment_destination"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:name="com.google.android.libraries.places.widget.AutocompleteSupportFragment"-->
+    <!--app:layout_constraintTop_toBottomOf="@id/divider"-->
+    <!--app:layout_constraintBottom_toTopOf="@id/map"-->
+    <!--/>-->
+
+
+    <LinearLayout
+        android:id="@+id/linear_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="text"
-        android:hint="@string/et_origin"
-        app:layout_constraintBottom_toTopOf="@id/et_destination"
+        android:orientation="vertical"
         app:layout_constraintTop_toTopOf="parent"
-        tools:layout_editor_absoluteX="5dp" />
+        app:layout_constraintBottom_toTopOf="@id/map">
 
-    <EditText
-        android:id="@+id/et_destination"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/et_destination"
-        android:inputType="text"
-        app:layout_constraintTop_toBottomOf="@id/et_origin"
-        app:layout_constraintBottom_toTopOf="@id/map"
-        style="@style/EditTexts"/>
+        <TextView
+            android:id="@+id/tv_origin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/tv_origin"
+            android:background="@layout/rounded_corner_textview"/>
 
-    <fragment
-        xmlns:android="http://schemas.android.com/apk/res/android"
+        <View
+            android:id="@+id/divider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_weight="1"
+            android:background="?android:attr/listDivider" />
+
+        <TextView
+            android:id="@+id/tv_destination"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/tv_destination"
+            android:background="@layout/rounded_corner_textview"/>
+
+    </LinearLayout>
+
+    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:map="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        map:layout_constraintVertical_weight="1"
         android:orientation="vertical"
-        tools:context=".MapsActivity"
-        map:layout_constraintTop_toBottomOf="@id/et_destination"
-        map:layout_constraintBottom_toBottomOf="parent"/>
+        map:layout_constraintTop_toBottomOf="@id/linear_layout"
+        map:layout_constraintBottom_toBottomOf="parent"
+        map:layout_constraintVertical_weight="1"
+        tools:context=".MapsActivity" />
 
     <Button
         android:id="@+id/b_find_route"
@@ -54,4 +93,5 @@
         app:layout_constraintBottom_toBottomOf="@+id/map"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
 </android.support.constraint.ConstraintLayout>

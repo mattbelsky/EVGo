@@ -5,4 +5,5 @@
     <string name="et_origin">Origin Address</string>
     <string name="tv_destination">Destination</string>
     <string name="et_destination">Destination Address</string>
+    <string name="et_search_location">Location Name or Address</string>
 </resources>

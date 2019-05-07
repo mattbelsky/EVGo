@@ -1,8 +1,8 @@
 package com.example.evrouteplannerapp;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -13,7 +13,7 @@ import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -28,58 +28,61 @@ import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
+    private static final String TAG = "MapsActivity";
     private static final int REQUEST_LOCATION_PERMISSION = 1;
+
     private GoogleMap mMap;
     private FusedLocationProviderClient mFusedLocationClient;
+    private Location mCurrentLocation;
+    private TextView mOriginTextView;
+    private TextView mDestinationTextView;
     private Button mFindRouteButton;
-    private EditText mOriginAddressEditText;
-    private EditText mDestAddressEditText;
+    private LatLng[] mCoords; // mCoords[0] is origin, [1] is destination
 
-    private View.OnClickListener findRouteButtonClickListener = new View.OnClickListener() {
+    private View.OnClickListener tvClickListener = new View.OnClickListener() {
+
         @Override
         public void onClick(View v) {
-            // logic for passing origin/destination coords to google location api and getting a route
-            EditText etOrigin = findViewById(R.id.et_origin);
-            EditText etDestination = findViewById(R.id.et_destination);
-            String strOrigin = etOrigin.getText().toString();
-            String strDestination = etDestination.getText().toString();
 
-            if (strOrigin == null || strDestination == null) {
+            Intent intent = new Intent(MapsActivity.this, LocationSearchActivity.class);
+            startActivity(intent);
+        }
+    };
+
+    private View.OnClickListener findRouteButtonClickListener = new View.OnClickListener() {
+
+        @Override
+        public void onClick(View v) {
+
+            // logic for passing origin/destination coords to google location api and getting a route
+            LatLng coordsOrigin = mCoords[0];
+            LatLng coordsDest = mCoords[1];
+
+            if (coordsOrigin == null || coordsDest == null) {
                 StringBuilder messageBuilder = new StringBuilder();
-                if (strOrigin == null)
+                if (coordsOrigin == null)
                     messageBuilder.append("Origin is empty. ");
-                if (strDestination == null)
+                if (coordsDest == null)
                     messageBuilder.append("Destination is empty.");
                 String message = messageBuilder.toString();
                 Toast.makeText(MapsActivity.this, message, Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            LatLng origin = getCoords(strOrigin);
-            LatLng destination = getCoords(strDestination);
-            URL url = ProxyApiUtil.buildUrl(origin, destination);
+            URL url = ProxyApiUtil.buildUrl(coordsOrigin, coordsDest);
             new QueryTask().execute(url);
-        }
-    };
-
-    private View.OnFocusChangeListener editTextFocusChangeListener = new View.OnFocusChangeListener() {
-        @Override
-        public void onFocusChange(View v, boolean hasFocus) {
-            if (hasFocus) {
-                EditText etView = (EditText) v;
-                etView.setHint("");
-                etView.setTextColor(Color.BLACK);
-            }
         }
     };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -88,14 +91,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapFragment.getMapAsync(this);
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
+        mOriginTextView = findViewById(R.id.tv_origin);
+        mDestinationTextView = findViewById(R.id.tv_destination);
+        mOriginTextView.setOnClickListener(tvClickListener);
+        mDestinationTextView.setOnClickListener(tvClickListener);
+
         mFindRouteButton = findViewById(R.id.b_find_route);
         mFindRouteButton.setOnClickListener(findRouteButtonClickListener);
 
-        mOriginAddressEditText = findViewById(R.id.et_origin);
-        mOriginAddressEditText.setOnFocusChangeListener(editTextFocusChangeListener);
-
-        mDestAddressEditText = findViewById(R.id.et_destination);
-        mDestAddressEditText.setOnFocusChangeListener(editTextFocusChangeListener);
+        mCoords = new LatLng[2];
     }
 
     /**
@@ -109,16 +113,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
+
         mMap = googleMap;
-        double[] lastKnownLocation = getLastKnownLocation();
         enableMyLocation(mMap);
-        LatLng location = new LatLng(lastKnownLocation[0], lastKnownLocation[1]);
-        mMap.addMarker(new MarkerOptions().position(location));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(location));
+        getLastKnownLocation();
+
+        if (mCurrentLocation != null) {
+            LatLng currentLocCoords = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
+            mMap.addMarker(new MarkerOptions().position(currentLocCoords));
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(currentLocCoords));
+        }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+
         if (requestCode == REQUEST_LOCATION_PERMISSION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 enableMyLocation(mMap);
@@ -127,6 +136,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void enableMyLocation(GoogleMap map) {
+
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             map.setMyLocationEnabled(true);
@@ -137,24 +147,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    private double[] getLastKnownLocation() {
-        final double[] latLng = new double[2];
+    private void getLastKnownLocation() {
 
         mFusedLocationClient.getLastLocation()
                 .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+
                     @Override
                     public void onSuccess(Location location) {
-                        if (location != null) {
-                            latLng[0] = location.getLatitude();
-                            latLng[1] = location.getLongitude();
-                        }
+                        if (location != null)
+                            mCurrentLocation = location;
+                        else
+                            Toast.makeText(MapsActivity.this, "Please ensure location is enabled.",
+                                    Toast.LENGTH_SHORT).show();
                     }
                 });
-        return latLng;
     }
 
-    private LatLng getCoords(String locationName) {
-        int maxResults = 5; // decide how to handle results later
+    private ArrayList<LatLng> getCoords(String locationName) {
+
+        int maxResults = 10; // See if this is an ideal number of results
         Geocoder geocoder = new Geocoder(this, Locale.US);
         List<Address> addresses;
 
@@ -164,10 +175,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             return null;
         }
 
-        Address address = addresses.get(0); // getting first result only for now -- will change later
-        double lat = address.getLatitude();
-        double lng = address.getLongitude();
+        // The list to return
+        ArrayList<LatLng> coordsList = new ArrayList<>();
+        for (Address a : addresses) {
+            LatLng coords = new LatLng(a.getLatitude(), a.getLongitude());
+            coordsList.add(coords);
+        }
 
-        return new LatLng(lat, lng);
+        return coordsList;
     }
 }

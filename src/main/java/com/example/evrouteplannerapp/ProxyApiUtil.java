@@ -32,7 +32,14 @@ public class ProxyApiUtil {
     private final static String LEVEL_ID = "3";
     private final static String MAX_RESULTS = "3";
 
+    /**
+     * Builds a URL intended to be used to query the proxy API.
+     * @param originCoords
+     * @param destinationCoords
+     * @return
+     */
     public static URL buildUrl(LatLng originCoords, LatLng destinationCoords) {
+
         String startLat = String.valueOf(originCoords.latitude);
         String startLng = String.valueOf(originCoords.longitude);
         String endLat = String.valueOf(destinationCoords.latitude);
@@ -58,20 +65,27 @@ public class ProxyApiUtil {
         return url;
     }
 
+    /**
+     * Queries the proxy API with the specified URL and gets a string response.
+     * @param url
+     * @return
+     * @throws IOException
+     */
     public static String getResponseFromHttpUrl(URL url) throws IOException {
-	HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-        urlConnection.connect();
-	try {
-            InputStream in = urlConnection.getInputStream();
-            Scanner scanner = new Scanner(in);
-            scanner.useDelimiter("\\A");
-            boolean hasInput = scanner.hasNext();
-	    if (hasInput)
-                return scanner.next();
-            else
-                return null;
-        } finally {
-            urlConnection.disconnect();
-        }
+
+        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.connect();
+        try {
+                InputStream in = urlConnection.getInputStream();
+                Scanner scanner = new Scanner(in);
+                scanner.useDelimiter("\\A");
+                boolean hasInput = scanner.hasNext();
+            if (hasInput)
+                    return scanner.next();
+                else
+                    return null;
+            } finally {
+                urlConnection.disconnect();
+            }
     }
 }

@@ -8,6 +8,8 @@ import java.net.URL;
 
 public class QueryTask extends AsyncTask<URL, Void, String> {
 
+    private static final String TAG = "QueryTask";
+
     @Override
     protected String doInBackground(URL... urls) {
         String response = null;
@@ -23,8 +25,8 @@ public class QueryTask extends AsyncTask<URL, Void, String> {
     protected void onPostExecute(String s) {
         if (s == null) {
             String message = "No value returned.";
-            Log.e(LoggerConstants.ERROR, message);
+            Log.e(TAG, message);
         } else
-            Log.i(LoggerConstants.INFO, s);
+            Log.i(TAG, s);
     }
 }
