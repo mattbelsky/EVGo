@@ -75,10 +75,11 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:orientation="vertical"
-        map:layout_constraintTop_toBottomOf="@id/linear_layout"
         map:layout_constraintBottom_toBottomOf="parent"
+        map:layout_constraintTop_toBottomOf="@id/linear_layout"
         map:layout_constraintVertical_weight="1"
-        tools:context=".MapsActivity" />
+        tools:context=".MapsActivity"
+        tools:layout_editor_absoluteX="-435dp" />
 
     <Button
         android:id="@+id/b_find_route"
@@ -93,5 +94,19 @@
         app:layout_constraintBottom_toBottomOf="@+id/map"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/b_clear"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:text="Clear All"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/map" />
 
 </android.support.constraint.ConstraintLayout>

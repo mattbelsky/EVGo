@@ -36,12 +36,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private static final String TAG = "MapsActivity";
     private static final int REQUEST_LOCATION_PERMISSION = 1;
+    private static final String TEXTVIEW_ID = "TEXTVIEW_ID";
+    private static final String ORIGIN_TEXT = "ORIGIN_TEXT";
+    private static final String DESTINATION_TEXT = "DESTINATION_TEXT";
 
     private GoogleMap mMap;
     private FusedLocationProviderClient mFusedLocationClient;
     private Location mCurrentLocation;
     private TextView mOriginTextView;
     private TextView mDestinationTextView;
+    private Button mClearButton;
     private Button mFindRouteButton;
     private LatLng[] mCoords; // mCoords[0] is origin, [1] is destination
 
@@ -51,7 +55,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         public void onClick(View v) {
 
             Intent intent = new Intent(MapsActivity.this, LocationSearchActivity.class);
+            intent.putExtra(TEXTVIEW_ID, v.getId());
             startActivity(intent);
+        }
+    };
+
+    private View.OnClickListener clearButtonClickListener = new View.OnClickListener() {
+
+        @Override
+        public void onClick(View v) {
+            mOriginTextView.setText(getText(R.string.tv_origin));
+            mDestinationTextView.setText(getText(R.string.tv_destination));
         }
     };
 
@@ -96,6 +110,32 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mOriginTextView.setOnClickListener(tvClickListener);
         mDestinationTextView.setOnClickListener(tvClickListener);
 
+        if (savedInstanceState != null) {
+            if (savedInstanceState.containsKey(ORIGIN_TEXT)) {
+                String originAddress = savedInstanceState.getString(ORIGIN_TEXT);
+                mOriginTextView.setText(originAddress);
+            }
+            if (savedInstanceState.containsKey(DESTINATION_TEXT)) {
+                String destinationAddress = savedInstanceState.getString(DESTINATION_TEXT);
+                mDestinationTextView.setText(destinationAddress);
+            }
+        }
+
+        Intent activityOriginIntent = getIntent();
+        if (activityOriginIntent.hasExtra(TEXTVIEW_ID) && activityOriginIntent.hasExtra("ADDRESS")) {
+
+            String address;
+            if (activityOriginIntent.getIntExtra(TEXTVIEW_ID, -1) == mOriginTextView.getId()) {
+                address = activityOriginIntent.getStringExtra("ADDRESS");
+                mOriginTextView.setText(address);
+            } else if (activityOriginIntent.getIntExtra(TEXTVIEW_ID, -1) == mDestinationTextView.getId()) {
+                address = activityOriginIntent.getStringExtra("ADDRESS");
+                mDestinationTextView.setText(address);
+            }
+        }
+
+        mClearButton = findViewById(R.id.b_clear);
+        mClearButton.setOnClickListener(clearButtonClickListener);
         mFindRouteButton = findViewById(R.id.b_find_route);
         mFindRouteButton.setOnClickListener(findRouteButtonClickListener);
 
@@ -123,6 +163,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             mMap.addMarker(new MarkerOptions().position(currentLocCoords));
             mMap.moveCamera(CameraUpdateFactory.newLatLng(currentLocCoords));
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+
+        super.onSaveInstanceState(outState);
+        String tvOriginText = mOriginTextView.getText().toString();
+        String tvDestText = mDestinationTextView.getText().toString();
+        String originalOriginText = getText(R.string.tv_origin).toString();
+        String originalDestText = getText(R.string.tv_destination).toString();
+
+        if (!tvOriginText.equals(originalOriginText))
+            outState.putString(ORIGIN_TEXT, tvOriginText);
+        else if (!tvDestText.equals(originalDestText))
+            outState.putString(DESTINATION_TEXT, tvDestText);
     }
 
     @Override

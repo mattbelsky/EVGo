@@ -5,6 +5,7 @@ import android.location.Address;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
@@ -14,9 +15,11 @@ public class LocationResultsRecyclerAdapter
         extends RecyclerView.Adapter<LocationResultsRecyclerAdapter.AddressViewHolder> {
 
     private List<Address> mAddressList;
+    private AddressListItemClickListener mOnClickListener;
 
-    public LocationResultsRecyclerAdapter(List<Address> mAddressList) {
-        this.mAddressList = mAddressList;
+    public LocationResultsRecyclerAdapter(List<Address> addressList, AddressListItemClickListener listItemClickListener) {
+        this.mAddressList = addressList;
+        this.mOnClickListener = listItemClickListener;
     }
 
     /**
@@ -56,7 +59,7 @@ public class LocationResultsRecyclerAdapter
         if (maxLines >= 0) {
             for (int i = 0; i <= maxLines; i++) {
                 String addressLine = address.getAddressLine(i);
-                addressBuilder.append(addressLine + "\n");
+                addressBuilder.append(addressLine + " ");
             }
         }
 
@@ -79,13 +82,23 @@ public class LocationResultsRecyclerAdapter
      * need more than one view per item, and you provide access to all the views for a data item in a
      * view holder.
      */
-    class AddressViewHolder extends RecyclerView.ViewHolder {
+    class AddressViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         TextView listItem;
 
         public AddressViewHolder(@NonNull TextView listItem) {
             super(listItem);
             this.listItem = listItem;
+            this.listItem.setOnClickListener(this);
         }
+
+        @Override
+        public void onClick(View v) {
+            mOnClickListener.onListItemClick(v);
+        }
+    }
+
+    interface AddressListItemClickListener {
+        void onListItemClick(View v);
     }
 }
