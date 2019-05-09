@@ -118,8 +118,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mOriginTextView.setOnClickListener(tvClickListener);
         mDestinationTextView.setOnClickListener(tvClickListener);
 
-        // Updates the TextViews with any text they may have held when onDestroy() was called, as well
-        // as any new data passed from the previous activity.
+        // Updates the TextViews with any text they may have held when tvClickListener's onClick()
+	// was called, as well as any new data passed from the previous activity.
         if (activityOriginIntent.hasExtra(ADDRESS)) {
             if (activityOriginIntent.hasExtra(ORIGIN_TEXT)) {
                 String originText = activityOriginIntent.getStringExtra(ORIGIN_TEXT);
