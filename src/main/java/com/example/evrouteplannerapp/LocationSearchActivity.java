@@ -17,11 +17,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import static com.example.evrouteplannerapp.Constants.ADDRESS;
+import static com.example.evrouteplannerapp.Constants.DESTINATION_TEXT;
+import static com.example.evrouteplannerapp.Constants.ORIGIN_TEXT;
+import static com.example.evrouteplannerapp.Constants.TEXTVIEW_ID;
+
 public class LocationSearchActivity extends AppCompatActivity
         implements LocationResultsRecyclerAdapter.AddressListItemClickListener {
 
-    // The name of the integer attached to the intent that launched this activity
-    private static final String TEXTVIEW_ID = "TEXTVIEW_ID";
+    private static final String TAG = "LocationSearchActivity";
 
     private EditText mSearchEditText;
     private FloatingActionButton mSearchButton;
@@ -29,6 +33,8 @@ public class LocationSearchActivity extends AppCompatActivity
     private LocationResultsRecyclerAdapter mLocationResultsRecyclerAdapter;
     private List<Address> mAddresses;
     private int mTvId; // the id of the TextView that was clicked to launch this activity
+    private String mMapsTvOriginText;
+    private String mMapsTvDestinationText;
 
     private View.OnClickListener searchButtonClickListener = new View.OnClickListener() {
 
@@ -56,6 +62,10 @@ public class LocationSearchActivity extends AppCompatActivity
         Intent activityOriginIntent = getIntent();
         if (activityOriginIntent.hasExtra(TEXTVIEW_ID))
             mTvId = activityOriginIntent.getIntExtra(TEXTVIEW_ID, -1);
+        if (activityOriginIntent.hasExtra(ORIGIN_TEXT))
+            mMapsTvOriginText = activityOriginIntent.getStringExtra(ORIGIN_TEXT);
+        if (activityOriginIntent.hasExtra(DESTINATION_TEXT))
+            mMapsTvDestinationText = activityOriginIntent.getStringExtra(DESTINATION_TEXT);
 
         mSearchEditText = findViewById(R.id.et_search_location);
         mSearchButton = findViewById(R.id.floatingActionButton);
@@ -82,9 +92,22 @@ public class LocationSearchActivity extends AppCompatActivity
         TextView item = (TextView) v;
         String address = item.getText().toString();
 
+        // Updates the appropriate fields depending on whether the id of the TextView whose click handler
+        // launched this activity matches the id of the origin or destination TextView.
+        if (mTvId == R.id.tv_origin)
+            mMapsTvOriginText = address;
+        else if (mTvId == R.id.tv_destination)
+            mMapsTvDestinationText = address;
+
         Intent intent = new Intent(this, MapsActivity.class);
-        intent.putExtra("ADDRESS", address);
+        intent.putExtra(ADDRESS, address);
         intent.putExtra(TEXTVIEW_ID, mTvId);
+
+        if (mMapsTvOriginText != null)
+            intent.putExtra(ORIGIN_TEXT, mMapsTvOriginText);
+        if (mMapsTvDestinationText != null)
+            intent.putExtra(DESTINATION_TEXT, mMapsTvDestinationText);
+
         startActivity(intent);
     }
 
