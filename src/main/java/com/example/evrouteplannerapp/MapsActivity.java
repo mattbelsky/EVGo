@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
@@ -24,6 +25,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.io.IOException;
@@ -31,9 +33,11 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ExecutionException;
 
-import static com.example.evrouteplannerapp.Constants.ADDRESS;
+import static com.example.evrouteplannerapp.Constants.DESTINATION_COORDS;
 import static com.example.evrouteplannerapp.Constants.DESTINATION_TEXT;
+import static com.example.evrouteplannerapp.Constants.ORIGIN_COORDS;
 import static com.example.evrouteplannerapp.Constants.ORIGIN_TEXT;
 import static com.example.evrouteplannerapp.Constants.TEXTVIEW_ID;
 
@@ -49,7 +53,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private TextView mDestinationTextView;
     private Button mClearButton;
     private Button mFindRouteButton;
-    private LatLng[] mCoords; // mCoords[0] is origin, [1] is destination
+    private double[] mCoordsOrigin;
+    private double[] mCoordsDestination;
+    private ArrayList<LatLng> mPolylineCoords;
+    private boolean mClearedTvsFlag = false;
 
     private View.OnClickListener tvClickListener = new View.OnClickListener() {
 
@@ -63,6 +70,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             intent.putExtra(TEXTVIEW_ID, v.getId());
             intent.putExtra(ORIGIN_TEXT, tvOriginText);
             intent.putExtra(DESTINATION_TEXT, tvDestinationText);
+
+            if (mCoordsOrigin != null)
+                intent.putExtra(ORIGIN_COORDS, mCoordsOrigin);
+            if (mCoordsDestination != null)
+                intent.putExtra(DESTINATION_COORDS, mCoordsDestination);
+
             startActivity(intent);
         }
     };
@@ -73,6 +86,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         public void onClick(View v) {
             mOriginTextView.setText(getText(R.string.tv_origin));
             mDestinationTextView.setText(getText(R.string.tv_destination));
+            mClearedTvsFlag = true;
         }
     };
 
@@ -81,23 +95,36 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         @Override
         public void onClick(View v) {
 
-            // logic for passing origin/destination coords to google location api and getting a route
-            LatLng coordsOrigin = mCoords[0];
-            LatLng coordsDest = mCoords[1];
-
-            if (coordsOrigin == null || coordsDest == null) {
+            if (mCoordsOrigin == null || mCoordsDestination == null || mClearedTvsFlag == true) {
                 StringBuilder messageBuilder = new StringBuilder();
-                if (coordsOrigin == null)
+                if (mCoordsOrigin == null || mClearedTvsFlag == true)
                     messageBuilder.append("Origin is empty. ");
-                if (coordsDest == null)
+                if (mCoordsDestination == null || mClearedTvsFlag == true)
                     messageBuilder.append("Destination is empty.");
                 String message = messageBuilder.toString();
                 Toast.makeText(MapsActivity.this, message, Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            URL url = ProxyApiUtil.buildUrl(coordsOrigin, coordsDest);
-            new QueryTask().execute(url);
+            LatLng originLatLng = new LatLng(mCoordsOrigin[0], mCoordsOrigin[1]);
+            LatLng destinationLatLng = new LatLng(mCoordsDestination[0], mCoordsDestination[1]);
+            URL url = ProxyApiUtil.buildUrlRoutePolyline(originLatLng, destinationLatLng);
+            AsyncTask<URL, Void, String> queryResult = new QueryTask().execute(url);
+            String polyline = null;
+            try {
+                polyline = queryResult.get();
+            } catch (ExecutionException | InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            ArrayList<LatLng> coords = getCoordsFromPolyline(polyline);
+            PolylineOptions polylineOptions = new PolylineOptions().clickable(false);
+
+            for (LatLng c : coords) {
+                polylineOptions.add(c);
+            }
+
+            mMap.addPolyline(polylineOptions);
         }
     };
 
@@ -118,25 +145,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mOriginTextView.setOnClickListener(tvClickListener);
         mDestinationTextView.setOnClickListener(tvClickListener);
 
-        // Updates the TextViews with any text they may have held when tvClickListener's onClick()
-	// was called, as well as any new data passed from the previous activity.
-        if (activityOriginIntent.hasExtra(ADDRESS)) {
-            if (activityOriginIntent.hasExtra(ORIGIN_TEXT)) {
-                String originText = activityOriginIntent.getStringExtra(ORIGIN_TEXT);
-                mOriginTextView.setText(originText);
-            }
-            if (activityOriginIntent.hasExtra(DESTINATION_TEXT)) {
-                String destinationText = activityOriginIntent.getStringExtra(DESTINATION_TEXT);
-                mDestinationTextView.setText(destinationText);
-            }
+        // Updates the fields with any text they may have held when tvClickListener's onClick()
+        // was called, as well as any new data passed from the previous activity.
+        if (activityOriginIntent.hasExtra(ORIGIN_TEXT)) {
+            String originText = activityOriginIntent.getStringExtra(ORIGIN_TEXT);
+            mOriginTextView.setText(originText);
         }
+        if (activityOriginIntent.hasExtra(DESTINATION_TEXT)) {
+            String destinationText = activityOriginIntent.getStringExtra(DESTINATION_TEXT);
+            mDestinationTextView.setText(destinationText);
+        }
+        if (activityOriginIntent.hasExtra(ORIGIN_COORDS))
+            mCoordsOrigin = activityOriginIntent.getDoubleArrayExtra(ORIGIN_COORDS);
+        if (activityOriginIntent.hasExtra(DESTINATION_COORDS))
+            mCoordsDestination = activityOriginIntent.getDoubleArrayExtra(DESTINATION_COORDS);
 
         mClearButton = findViewById(R.id.b_clear);
         mClearButton.setOnClickListener(clearButtonClickListener);
         mFindRouteButton = findViewById(R.id.b_find_route);
         mFindRouteButton.setOnClickListener(findRouteButtonClickListener);
-
-        mCoords = new LatLng[2];
+        mPolylineCoords = null;
     }
 
     /**
@@ -199,8 +227,43 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
                 });
     }
+    
+    private ArrayList<LatLng> getCoordsFromPolyline(String polyline) {
 
-    private ArrayList<LatLng> getCoords(String locationName) {
+        // Replaces every case of "\\\\" by removing 2 slashes, thereby avoiding an IndexOutOfBoundsException.
+        polyline = polyline.replaceAll("\\\\\\\\", "\\\\");
+        ArrayList<LatLng> coords = new ArrayList();
+        int index = 0, len = polyline.length();
+        int lat = 0, lng = 0;
+
+        while (index < len) {
+            int b, shift = 0, result = 0;
+            do {
+                b = polyline.charAt(index++) - 63;
+                result |= (b & 0x1f) << shift;
+                shift += 5;
+            } while (b >= 0x20);
+            int dlat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+            lat += dlat;
+
+            shift = 0;
+            result = 0;
+            do {
+                b = polyline.charAt(index++) - 63;
+                result |= (b & 0x1f) << shift;
+                shift += 5;
+            } while (b >= 0x20);
+            int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+            lng += dlng;
+
+            LatLng point = new LatLng((((double) lat / 1E5)), ((double) lng / 1E5));
+            coords.add(point);
+        }
+
+        return coords;
+    }
+
+    private ArrayList<LatLng> getCoordsFromName(String locationName) {
 
         int maxResults = 10; // See if this is an ideal number of results
         Geocoder geocoder = new Geocoder(this, Locale.US);

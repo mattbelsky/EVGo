@@ -30,7 +30,7 @@ public class LocationResultsRecyclerAdapter
      */
     @NonNull
     @Override
-    public LocationResultsRecyclerAdapter.AddressViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
+    public LocationResultsRecyclerAdapter.AddressViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int index) {
 
         Context context = viewGroup.getContext();
         int layoutIdForListItem = R.layout.address_list_item;
@@ -39,7 +39,7 @@ public class LocationResultsRecyclerAdapter
 
         // Creates a new view using the new layout inflater and creates a new view holder from the view.
         TextView listItem = (TextView) inflater.inflate(layoutIdForListItem, viewGroup, shouldAttachToParentImmediately);
-        AddressViewHolder viewHolder = new AddressViewHolder(listItem);
+        AddressViewHolder viewHolder = new AddressViewHolder(listItem, index);
 
         return viewHolder;
     }
@@ -47,13 +47,13 @@ public class LocationResultsRecyclerAdapter
     /**
      * Replaces the contents of a view (invoked by the layout manager).
      * @param viewHolder -- the reference to the view whose contents will be replaced
-     * @param position -- the view holder's position in the RecyclerView
+     * @param index -- the view holder's position in the RecyclerView
      */
     @Override
-    public void onBindViewHolder(@NonNull LocationResultsRecyclerAdapter.AddressViewHolder viewHolder, int position) {
+    public void onBindViewHolder(@NonNull LocationResultsRecyclerAdapter.AddressViewHolder viewHolder, int index) {
 
         StringBuilder addressBuilder = new StringBuilder();
-        Address address = mAddressList.get(position);
+        Address address = mAddressList.get(index);
 
         int maxLines = address.getMaxAddressLineIndex();
         if (maxLines >= 0) {
@@ -85,20 +85,22 @@ public class LocationResultsRecyclerAdapter
     class AddressViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         TextView listItem;
+        int index;
 
-        public AddressViewHolder(@NonNull TextView listItem) {
+        public AddressViewHolder(@NonNull TextView listItem, @NonNull int index) {
             super(listItem);
             this.listItem = listItem;
+            this.index = index;
             this.listItem.setOnClickListener(this);
         }
 
         @Override
         public void onClick(View v) {
-            mOnClickListener.onListItemClick(v);
+            mOnClickListener.onListItemClick(v, index);
         }
     }
 
     interface AddressListItemClickListener {
-        void onListItemClick(View v);
+        void onListItemClick(View v, int index);
     }
 }

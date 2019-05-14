@@ -15,7 +15,8 @@ public class ProxyApiUtil {
 
     /* Since the emulator is running behind a virtual router, 10.0.2.2 is a special address that is 
      * required to reference the address 127.0.0.1 on the development machine. */
-    private final static String BASE_URL = "http://10.0.2.2:8080/routeplanner/go";
+    private final static String BASE_URL_ROUTE_PLANNER = "http://10.0.2.2:8080/routeplanner/go";
+    private final static String BASE_URL_ROUTE_POLYLINE = "http://10.0.2.2:8080/routeplanner/route/polyline";
     private final static String START_LAT_PARAM_QUERY = "start_lat";
     private final static String START_LNG_PARAM_QUERY = "start_lng";
     private final static String END_LAT_PARAM_QUERY = "end_lat";
@@ -38,15 +39,14 @@ public class ProxyApiUtil {
      * @param destinationCoords
      * @return
      */
-    public static URL buildUrl(LatLng originCoords, LatLng destinationCoords) {
+    public static URL buildUrlRoutePlanner(LatLng originCoords, LatLng destinationCoords) {
 
         String startLat = String.valueOf(originCoords.latitude);
         String startLng = String.valueOf(originCoords.longitude);
         String endLat = String.valueOf(destinationCoords.latitude);
         String endLng = String.valueOf(destinationCoords.longitude);
-        URL url = null;
 
-        Uri builtUri = Uri.parse(BASE_URL).buildUpon()
+        Uri builtUri = Uri.parse(BASE_URL_ROUTE_PLANNER).buildUpon()
                 .appendQueryParameter(START_LAT_PARAM_QUERY, startLat)
                 .appendQueryParameter(START_LNG_PARAM_QUERY, startLng)
                 .appendQueryParameter(END_LAT_PARAM_QUERY, endLat)
@@ -56,13 +56,25 @@ public class ProxyApiUtil {
                 .appendQueryParameter(LEVEL_ID_QUERY, LEVEL_ID)
                 .appendQueryParameter(MAX_RESULTS_QUERY, MAX_RESULTS)
                 .build();
-        try {
-            url = new URL(builtUri.toString());
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-            return null;
-        }
-        return url;
+
+        return uriToUrl(builtUri);
+    }
+
+    public static URL buildUrlRoutePolyline(LatLng originCoords, LatLng destinationCoords) {
+
+        String startLat = String.valueOf(originCoords.latitude);
+        String startLng = String.valueOf(originCoords.longitude);
+        String endLat = String.valueOf(destinationCoords.latitude);
+        String endLng = String.valueOf(destinationCoords.longitude);
+
+        Uri builtUri = Uri.parse(BASE_URL_ROUTE_POLYLINE).buildUpon()
+                .appendQueryParameter(START_LAT_PARAM_QUERY, startLat)
+                .appendQueryParameter(START_LNG_PARAM_QUERY, startLng)
+                .appendQueryParameter(END_LAT_PARAM_QUERY, endLat)
+                .appendQueryParameter(END_LNG_PARAM_QUERY, endLng)
+                .build();
+
+        return uriToUrl(builtUri);
     }
 
     /**
@@ -87,5 +99,15 @@ public class ProxyApiUtil {
             } finally {
                 urlConnection.disconnect();
             }
+    }
+
+    private static URL uriToUrl(Uri uri) {
+
+        try {
+            return new URL(uri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }

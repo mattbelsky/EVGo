@@ -13,12 +13,13 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 import static com.example.evrouteplannerapp.Constants.ADDRESS;
+import static com.example.evrouteplannerapp.Constants.DESTINATION_COORDS;
 import static com.example.evrouteplannerapp.Constants.DESTINATION_TEXT;
+import static com.example.evrouteplannerapp.Constants.ORIGIN_COORDS;
 import static com.example.evrouteplannerapp.Constants.ORIGIN_TEXT;
 import static com.example.evrouteplannerapp.Constants.TEXTVIEW_ID;
 
@@ -35,6 +36,8 @@ public class LocationSearchActivity extends AppCompatActivity
     private int mTvId; // the id of the TextView that was clicked to launch this activity
     private String mMapsTvOriginText;
     private String mMapsTvDestinationText;
+    private double[] mCoordsOrigin;
+    private double[] mCoordsDestination;
 
     private View.OnClickListener searchButtonClickListener = new View.OnClickListener() {
 
@@ -66,6 +69,10 @@ public class LocationSearchActivity extends AppCompatActivity
             mMapsTvOriginText = activityOriginIntent.getStringExtra(ORIGIN_TEXT);
         if (activityOriginIntent.hasExtra(DESTINATION_TEXT))
             mMapsTvDestinationText = activityOriginIntent.getStringExtra(DESTINATION_TEXT);
+        if (activityOriginIntent.hasExtra(ORIGIN_COORDS))
+            mCoordsOrigin = activityOriginIntent.getDoubleArrayExtra(ORIGIN_COORDS);
+        if (activityOriginIntent.hasExtra(DESTINATION_COORDS))
+            mCoordsDestination = activityOriginIntent.getDoubleArrayExtra(DESTINATION_COORDS);
 
         mSearchEditText = findViewById(R.id.et_search_location);
         mSearchButton = findViewById(R.id.floatingActionButton);
@@ -87,22 +94,32 @@ public class LocationSearchActivity extends AppCompatActivity
      * @param v -- the view that was clicked (actually a TextView)
      */
     @Override
-    public void onListItemClick(View v) {
+    public void onListItemClick(View v, int index) {
 
         TextView item = (TextView) v;
-        String address = item.getText().toString();
-
-        // Updates the appropriate fields depending on whether the id of the TextView whose click handler
-        // launched this activity matches the id of the origin or destination TextView.
-        if (mTvId == R.id.tv_origin)
-            mMapsTvOriginText = address;
-        else if (mTvId == R.id.tv_destination)
-            mMapsTvDestinationText = address;
+        String addressStr = item.getText().toString();
+        Address address = mAddresses.get(index);
 
         Intent intent = new Intent(this, MapsActivity.class);
-        intent.putExtra(ADDRESS, address);
+        intent.putExtra(ADDRESS, addressStr);
         intent.putExtra(TEXTVIEW_ID, mTvId);
 
+        /* Updates the appropriate fields depending on whether the id of the TextView whose click handler
+         * launched this activity matches the id of the origin or destination TextView. */
+        if (mTvId == R.id.tv_origin) {
+            mMapsTvOriginText = addressStr;
+            mCoordsOrigin = getCoords(address);
+        } else if (mTvId == R.id.tv_destination) {
+            mMapsTvDestinationText = addressStr;
+            mCoordsDestination = getCoords(address);
+        }
+
+        if (mCoordsOrigin != null)
+            intent.putExtra(ORIGIN_COORDS, mCoordsOrigin);
+        if (mCoordsDestination != null)
+            intent.putExtra(DESTINATION_COORDS, mCoordsDestination);
+
+        // These fields should not be null, but the check is for safety.
         if (mMapsTvOriginText != null)
             intent.putExtra(ORIGIN_TEXT, mMapsTvOriginText);
         if (mMapsTvDestinationText != null)
@@ -129,5 +146,12 @@ public class LocationSearchActivity extends AppCompatActivity
         }
 
         return addresses;
+    }
+
+    private double[] getCoords(Address address) {
+        return new double[] {
+                address.getLatitude(),
+                address.getLongitude()
+        };
     }
 }
