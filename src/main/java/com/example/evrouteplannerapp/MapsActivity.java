@@ -3,6 +3,7 @@ package com.example.evrouteplannerapp;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -12,6 +13,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -24,8 +26,10 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.maps.model.RoundCap;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.io.IOException;
@@ -103,6 +107,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     messageBuilder.append("Destination is empty.");
                 String message = messageBuilder.toString();
                 Toast.makeText(MapsActivity.this, message, Toast.LENGTH_SHORT).show();
+                Log.w(TAG, "\"Find route\" button clicked with empty origin or destination TextViews.");
                 return;
             }
 
@@ -111,20 +116,38 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             URL url = ProxyApiUtil.buildUrlRoutePolyline(originLatLng, destinationLatLng);
             AsyncTask<URL, Void, String> queryResult = new QueryTask().execute(url);
             String polyline = null;
+
             try {
                 polyline = queryResult.get();
             } catch (ExecutionException | InterruptedException e) {
                 e.printStackTrace();
+                return;
+            }
+
+            // The polyline may be null if the proxy API is down.
+            if (polyline == null) {
+                Toast.makeText(MapsActivity.this, "No results for query.", Toast.LENGTH_SHORT)
+                        .show();
+                Log.w(TAG, "Polyline is null. Proxy API may be unavailable.");
+                return;
             }
 
             ArrayList<LatLng> coords = getCoordsFromPolyline(polyline);
-            PolylineOptions polylineOptions = new PolylineOptions().clickable(false);
+            LatLngBounds.Builder boundsBuilder = new LatLngBounds.Builder();
+            PolylineOptions polylineOptions = new PolylineOptions()
+                    .clickable(false)
+                    .color(Color.BLUE)
+                    .startCap(new RoundCap())
+                    .endCap(new RoundCap());
 
             for (LatLng c : coords) {
+                boundsBuilder.include(c);
                 polylineOptions.add(c);
             }
 
+            LatLngBounds bounds = boundsBuilder.build();
             mMap.addPolyline(polylineOptions);
+            mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 80));
         }
     };
 
