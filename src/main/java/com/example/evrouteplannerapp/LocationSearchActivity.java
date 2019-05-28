@@ -39,21 +39,17 @@ public class LocationSearchActivity extends AppCompatActivity
     private double[] mCoordsOrigin;
     private double[] mCoordsDestination;
 
-    private View.OnClickListener searchButtonClickListener = new View.OnClickListener() {
+    private View.OnClickListener searchButtonClickListener = v -> {
 
-        @Override
-        public void onClick(View v) {
+        String locationString = mSearchEditText.getText().toString();
+        mAddresses = getAddresses(locationString);
 
-            String locationString = mSearchEditText.getText().toString();
-            mAddresses = getAddresses(locationString);
-
-            // Creating the adapter and assigning it to the RecyclerView in the click listener ensures
-            // that the user has finished entering his search text and clicked the search button so
-            // that the list of addresses is not empty.
-            mLocationResultsRecyclerAdapter = new LocationResultsRecyclerAdapter(mAddresses,
-                    LocationSearchActivity.this);
-            mListAddressesRecyclerView.setAdapter(mLocationResultsRecyclerAdapter);
-        }
+        // Creating the adapter and assigning it to the RecyclerView in the click listener ensures
+        // that the user has finished entering his search text and clicked the search button so
+        // that the list of addresses is not empty.
+        mLocationResultsRecyclerAdapter = new LocationResultsRecyclerAdapter(mAddresses,
+                LocationSearchActivity.this);
+        mListAddressesRecyclerView.setAdapter(mLocationResultsRecyclerAdapter);
     };
 
     @Override

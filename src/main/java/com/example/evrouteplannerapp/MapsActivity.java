@@ -19,6 +19,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.evrouteplannerapp.models.ChargingSite;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -31,6 +33,10 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.RoundCap;
 import com.google.android.gms.tasks.OnSuccessListener;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.URL;
@@ -62,93 +68,48 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private ArrayList<LatLng> mPolylineCoords;
     private boolean mClearedTvsFlag = false;
 
-    private View.OnClickListener tvClickListener = new View.OnClickListener() {
+    private View.OnClickListener tvClickListener = v -> {
 
-        @Override
-        public void onClick(View v) {
+        String tvOriginText = mOriginTextView.getText().toString();
+        String tvDestinationText = mDestinationTextView.getText().toString();
 
-            String tvOriginText = mOriginTextView.getText().toString();
-            String tvDestinationText = mDestinationTextView.getText().toString();
+        Intent intent = new Intent(MapsActivity.this, LocationSearchActivity.class);
+        intent.putExtra(TEXTVIEW_ID, v.getId());
+        intent.putExtra(ORIGIN_TEXT, tvOriginText);
+        intent.putExtra(DESTINATION_TEXT, tvDestinationText);
 
-            Intent intent = new Intent(MapsActivity.this, LocationSearchActivity.class);
-            intent.putExtra(TEXTVIEW_ID, v.getId());
-            intent.putExtra(ORIGIN_TEXT, tvOriginText);
-            intent.putExtra(DESTINATION_TEXT, tvDestinationText);
+        if (mCoordsOrigin != null)
+            intent.putExtra(ORIGIN_COORDS, mCoordsOrigin);
+        if (mCoordsDestination != null)
+            intent.putExtra(DESTINATION_COORDS, mCoordsDestination);
 
-            if (mCoordsOrigin != null)
-                intent.putExtra(ORIGIN_COORDS, mCoordsOrigin);
-            if (mCoordsDestination != null)
-                intent.putExtra(DESTINATION_COORDS, mCoordsDestination);
-
-            startActivity(intent);
-        }
+        startActivity(intent);
     };
 
-    private View.OnClickListener clearButtonClickListener = new View.OnClickListener() {
-
-        @Override
-        public void onClick(View v) {
-            mOriginTextView.setText(getText(R.string.tv_origin));
-            mDestinationTextView.setText(getText(R.string.tv_destination));
-            mClearedTvsFlag = true;
-        }
+    private View.OnClickListener clearButtonClickListener = v -> {
+        mOriginTextView.setText(getText(R.string.tv_origin));
+        mDestinationTextView.setText(getText(R.string.tv_destination));
+        mClearedTvsFlag = true;
     };
 
-    private View.OnClickListener findRouteButtonClickListener = new View.OnClickListener() {
+    private View.OnClickListener findRouteButtonClickListener = v -> {
 
-        @Override
-        public void onClick(View v) {
-
-            if (mCoordsOrigin == null || mCoordsDestination == null || mClearedTvsFlag == true) {
-                StringBuilder messageBuilder = new StringBuilder();
-                if (mCoordsOrigin == null || mClearedTvsFlag == true)
-                    messageBuilder.append("Origin is empty. ");
-                if (mCoordsDestination == null || mClearedTvsFlag == true)
-                    messageBuilder.append("Destination is empty.");
-                String message = messageBuilder.toString();
-                Toast.makeText(MapsActivity.this, message, Toast.LENGTH_SHORT).show();
-                Log.w(TAG, "\"Find route\" button clicked with empty origin or destination TextViews.");
-                return;
-            }
-
-            LatLng originLatLng = new LatLng(mCoordsOrigin[0], mCoordsOrigin[1]);
-            LatLng destinationLatLng = new LatLng(mCoordsDestination[0], mCoordsDestination[1]);
-            URL url = ProxyApiUtil.buildUrlRoutePolyline(originLatLng, destinationLatLng);
-            AsyncTask<URL, Void, String> queryResult = new QueryTask().execute(url);
-            String polyline = null;
-
-            try {
-                polyline = queryResult.get();
-            } catch (ExecutionException | InterruptedException e) {
-                e.printStackTrace();
-                return;
-            }
-
-            // The polyline may be null if the proxy API is down.
-            if (polyline == null) {
-                Toast.makeText(MapsActivity.this, "No results for query.", Toast.LENGTH_SHORT)
-                        .show();
-                Log.w(TAG, "Polyline is null. Proxy API may be unavailable.");
-                return;
-            }
-
-            ArrayList<LatLng> coords = getCoordsFromPolyline(polyline);
-            LatLngBounds.Builder boundsBuilder = new LatLngBounds.Builder();
-            PolylineOptions polylineOptions = new PolylineOptions()
-                    .clickable(false)
-                    .color(Color.BLUE)
-                    .startCap(new RoundCap())
-                    .endCap(new RoundCap());
-
-            for (LatLng c : coords) {
-                boundsBuilder.include(c);
-                polylineOptions.add(c);
-            }
-
-            LatLngBounds bounds = boundsBuilder.build();
-            mMap.addPolyline(polylineOptions);
-            mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 80));
+        if (mCoordsOrigin == null || mCoordsDestination == null || mClearedTvsFlag == true) {
+            StringBuilder messageBuilder = new StringBuilder();
+            if (mCoordsOrigin == null || mClearedTvsFlag == true)
+                messageBuilder.append("Origin is empty. ");
+            if (mCoordsDestination == null || mClearedTvsFlag == true)
+                messageBuilder.append("Destination is empty.");
+            String message = messageBuilder.toString();
+            Toast.makeText(MapsActivity.this, message, Toast.LENGTH_SHORT).show();
+            Log.w(TAG, "\"Find route\" button clicked with empty origin or destination TextViews.");
+            return;
         }
+
+        LatLng origin = new LatLng(mCoordsOrigin[0], mCoordsOrigin[1]);
+        LatLng destination = new LatLng(mCoordsDestination[0], mCoordsDestination[1]);
+        showPolyline(origin, destination);
+        showChargingSites(origin, destination);
     };
 
     @Override
@@ -210,6 +171,90 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             LatLng currentLocCoords = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
             mMap.addMarker(new MarkerOptions().position(currentLocCoords));
             mMap.moveCamera(CameraUpdateFactory.newLatLng(currentLocCoords));
+        }
+    }
+
+    /**
+     * Retrieves and displays the route polyline on the map.
+     * @param origin
+     * @param destination
+     */
+    private void showPolyline(LatLng origin, LatLng destination) {
+
+        URL url = ProxyApiUtil.buildUrlRoutePolyline(origin, destination);
+        AsyncTask<URL, Void, String> future = new QueryTask().execute(url);
+        String polyline;
+
+        try {
+            polyline = future.get();
+        } catch (ExecutionException | InterruptedException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        // The polyline may be null if the proxy API is down.
+        if (polyline == null) {
+            Toast.makeText(MapsActivity.this, "No results for query.", Toast.LENGTH_SHORT)
+                    .show();
+            Log.w(TAG, "Polyline is null. Proxy API may be unavailable.");
+            return;
+        }
+
+        ArrayList<LatLng> coords = getCoordsFromPolyline(polyline);
+        LatLngBounds.Builder boundsBuilder = new LatLngBounds.Builder();
+        PolylineOptions polylineOptions = new PolylineOptions()
+                .clickable(false)
+                .color(Color.BLUE)
+                .startCap(new RoundCap())
+                .endCap(new RoundCap());
+
+        for (LatLng c : coords) {
+            boundsBuilder.include(c);
+            polylineOptions.add(c);
+        }
+
+        LatLngBounds bounds = boundsBuilder.build();
+        mMap.addPolyline(polylineOptions);
+        mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 80));
+    }
+
+    /**
+     * Retrieves and displays the list of charging sites associated with route as markers on the map.
+     * @param origin
+     * @param destination
+     */
+    private void showChargingSites(LatLng origin, LatLng destination) {
+
+        URL url = ProxyApiUtil.buildUrlRoutePlanner(origin, destination);
+        AsyncTask<URL, Void, String> future = new QueryTask().execute(url);
+        String result;
+        JSONArray json; // Is this necessary?
+
+        try {
+            result = future.get();
+            json = new JSONArray(result);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+
+        ObjectMapper mapper = new ObjectMapper();
+        ArrayList<ChargingSite> sites = new ArrayList<>();
+
+        for (int i = 0; i < json.length(); i++) {
+            ChargingSite site = null;
+            try {
+                site = mapper.readValue(json.get(i).toString(), ChargingSite.class);
+            } catch (IOException | JSONException e) {
+                e.printStackTrace();
+            }
+            if (site != null) {
+                sites.add(site);
+                double lat = site.getAddressInfo().getLatitude();
+                double lng = site.getAddressInfo().getLongitude();
+                MarkerOptions options = new MarkerOptions().position(new LatLng(lat, lng));
+                mMap.addMarker(options);
+            }
         }
     }
 

@@ -16,7 +16,7 @@ public class ProxyApiUtil {
     /* Since the emulator is running behind a virtual router, 10.0.2.2 is a special address that is 
      * required to reference the address 127.0.0.1 on the development machine. */
     private final static String BASE_URL_ROUTE_PLANNER = "http://10.0.2.2:8080/routeplanner/go";
-    private final static String BASE_URL_ROUTE_POLYLINE = "http://10.0.2.2:8080/routeplanner/route/polyline";
+    private final static String BASE_URL_ROUTE_POLYLINE = "http://10.0.2.2:8080/routeplanner/polyline";
     private final static String START_LAT_PARAM_QUERY = "start_lat";
     private final static String START_LNG_PARAM_QUERY = "start_lng";
     private final static String END_LAT_PARAM_QUERY = "end_lat";

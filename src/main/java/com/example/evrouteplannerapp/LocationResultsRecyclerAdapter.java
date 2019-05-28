@@ -25,7 +25,7 @@ public class LocationResultsRecyclerAdapter
     /**
      * Creates new views (invoked by the layout manager).
      * @param viewGroup -- in this case, the RecyclerView (?)
-     * @param i
+     * @param index
      * @return a view holder referencing the newly created view
      */
     @NonNull
