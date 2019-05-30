@@ -12,6 +12,7 @@ public class QueryTask extends AsyncTask<URL, Void, String> {
 
     @Override
     protected String doInBackground(URL... urls) {
+        Log.i(Thread.currentThread().getName(), "Thread starting...");
         String response = null;
         try {
             response = ProxyApiUtil.getResponseFromHttpUrl(urls[0]);
@@ -28,5 +29,6 @@ public class QueryTask extends AsyncTask<URL, Void, String> {
             Log.e(TAG, message);
         } else
             Log.i(TAG, s);
+        Log.i(Thread.currentThread().getName(), "Thread ended.");
     }
 }

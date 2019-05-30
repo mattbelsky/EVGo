@@ -100,6 +100,9 @@ public class LocationResultsRecyclerAdapter
         }
     }
 
+    /**
+     * Interface allows onClick() functionality to be defined within the activity class itself.
+     */
     interface AddressListItemClickListener {
         void onListItemClick(View v, int index);
     }

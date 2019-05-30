@@ -11,6 +11,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Scanner;
 
+/**
+ * Static utility methods for interacting with the proxy API.
+ */
 public class ProxyApiUtil {
 
     /* Since the emulator is running behind a virtual router, 10.0.2.2 is a special address that is 
@@ -34,17 +37,17 @@ public class ProxyApiUtil {
     private final static String MAX_RESULTS = "3";
 
     /**
-     * Builds a URL intended to be used to query the proxy API.
-     * @param originCoords
-     * @param destinationCoords
+     * Builds a URL intended for querying the proxy API's route planner endpoint.
+     * @param origin
+     * @param destination
      * @return
      */
-    public static URL buildUrlRoutePlanner(LatLng originCoords, LatLng destinationCoords) {
+    public static URL buildUrlRoutePlanner(LatLng origin, LatLng destination) {
 
-        String startLat = String.valueOf(originCoords.latitude);
-        String startLng = String.valueOf(originCoords.longitude);
-        String endLat = String.valueOf(destinationCoords.latitude);
-        String endLng = String.valueOf(destinationCoords.longitude);
+        String startLat = String.valueOf(origin.latitude);
+        String startLng = String.valueOf(origin.longitude);
+        String endLat = String.valueOf(destination.latitude);
+        String endLng = String.valueOf(destination.longitude);
 
         Uri builtUri = Uri.parse(BASE_URL_ROUTE_PLANNER).buildUpon()
                 .appendQueryParameter(START_LAT_PARAM_QUERY, startLat)
@@ -60,12 +63,18 @@ public class ProxyApiUtil {
         return uriToUrl(builtUri);
     }
 
-    public static URL buildUrlRoutePolyline(LatLng originCoords, LatLng destinationCoords) {
+    /**
+     * Builds a URL intended for querying the proxy API's polyline-generating endpoint.
+     * @param origin
+     * @param destination
+     * @return
+     */
+    public static URL buildUrlRoutePolyline(LatLng origin, LatLng destination) {
 
-        String startLat = String.valueOf(originCoords.latitude);
-        String startLng = String.valueOf(originCoords.longitude);
-        String endLat = String.valueOf(destinationCoords.latitude);
-        String endLng = String.valueOf(destinationCoords.longitude);
+        String startLat = String.valueOf(origin.latitude);
+        String startLng = String.valueOf(origin.longitude);
+        String endLat = String.valueOf(destination.latitude);
+        String endLng = String.valueOf(destination.longitude);
 
         Uri builtUri = Uri.parse(BASE_URL_ROUTE_POLYLINE).buildUpon()
                 .appendQueryParameter(START_LAT_PARAM_QUERY, startLat)
@@ -101,6 +110,11 @@ public class ProxyApiUtil {
             }
     }
 
+    /**
+     * Converts the given Uri object to a URL.
+     * @param uri
+     * @return
+     */
     private static URL uriToUrl(Uri uri) {
 
         try {
