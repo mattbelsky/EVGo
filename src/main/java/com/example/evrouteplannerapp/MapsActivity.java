@@ -1,12 +1,18 @@
 package com.example.evrouteplannerapp;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.AsyncTask;
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.preference.PreferenceManager;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -39,12 +45,14 @@ import static com.example.evrouteplannerapp.Constants.ORIGIN_COORDS;
 import static com.example.evrouteplannerapp.Constants.ORIGIN_TEXT;
 import static com.example.evrouteplannerapp.Constants.TEXTVIEW_ID;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,
+        SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final String TAG = "MapsActivity";
 
     private GoogleMap mMap;
     private Location mCurrentLocation;
+    private Toolbar mToolbar;
     private TextView mOriginTextView;
     private TextView mDestinationTextView;
     private Button mClearButton;
@@ -52,65 +60,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private ProgressBar mProgressSpinner;
     private double[] mCoordsOrigin;
     private double[] mCoordsDestination;
-    private ArrayList<LatLng> mPolylineCoords;
     private boolean mClearedTvsFlag = false;
+    private String mDistance;
+    private String mDistanceUnit;
 
     private View.OnClickListener tvClickListener = v -> {
 
-        String tvOriginText = mOriginTextView.getText().toString();
-        String tvDestinationText = mDestinationTextView.getText().toString();
-
-        Intent intent = new Intent(MapsActivity.this, LocationSearchActivity.class);
-        intent.putExtra(TEXTVIEW_ID, v.getId());
-        intent.putExtra(ORIGIN_TEXT, tvOriginText);
-        intent.putExtra(DESTINATION_TEXT, tvDestinationText);
-
-        if (mCoordsOrigin != null)
-            intent.putExtra(ORIGIN_COORDS, mCoordsOrigin);
-        if (mCoordsDestination != null)
-            intent.putExtra(DESTINATION_COORDS, mCoordsDestination);
-
+        Intent intent = buildIntent(LocationSearchActivity.class, v);
         startActivity(intent);
-    };
-
-    private View.OnClickListener clearButtonClickListener = v -> {
-
-        mOriginTextView.setText(getText(R.string.tv_origin));
-        mDestinationTextView.setText(getText(R.string.tv_destination));
-        mClearedTvsFlag = true;
-    };
-
-    private View.OnClickListener findRouteButtonClickListener = v -> {
-
-        if (mCoordsOrigin == null || mCoordsDestination == null || mClearedTvsFlag == true) {
-            StringBuilder messageBuilder = new StringBuilder();
-            if (mCoordsOrigin == null || mClearedTvsFlag == true)
-                messageBuilder.append("Origin is empty. ");
-            if (mCoordsDestination == null || mClearedTvsFlag == true)
-                messageBuilder.append("Destination is empty.");
-            String message = messageBuilder.toString();
-            Toast.makeText(MapsActivity.this, message, Toast.LENGTH_SHORT).show();
-            Log.w(TAG, "\"Find route\" button clicked with empty origin or destination TextViews.");
-            return;
-        }
-
-        mProgressSpinner.setVisibility(View.VISIBLE);
-        Log.i(TAG, "Progress spinner should be visible.");
-
-        LatLng origin = new LatLng(mCoordsOrigin[0], mCoordsOrigin[1]);
-        LatLng destination = new LatLng(mCoordsDestination[0], mCoordsDestination[1]);
-        showPolyline(origin, destination);
-        showChargingSites(origin, destination);
-
-        mProgressSpinner.setVisibility(View.INVISIBLE);
-        Log.i(TAG, "Progress spinner should be gone.");
-    };
-
-    private GoogleMap.OnMarkerClickListener markerClickListener = marker -> {
-
-        marker.showInfoWindow();
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 15)); // Why isn't it zooming??
-        return true;
     };
 
     @Override
@@ -120,17 +77,31 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
+                .findFragmentById(R.id.fragment_map);
         mapFragment.getMapAsync(this);
+
+        // Set up and get values from shared preferences. Sets defaults if nothing selected on preferences screen.
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+        mDistance = sharedPreferences.getString(getString(R.string.pref_distance_key), "3");
+        mDistanceUnit = sharedPreferences.getString(
+                getString(R.string.pref_distance_unit_key),
+                getString(R.string.pref_distance_unit_miles)
+        );
+
         Intent activityOriginIntent = getIntent();
+
+        mToolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(mToolbar);
+        ActionBar actionBar = getSupportActionBar();
 
         mOriginTextView = findViewById(R.id.tv_origin);
         mDestinationTextView = findViewById(R.id.tv_destination);
         mOriginTextView.setOnClickListener(tvClickListener);
         mDestinationTextView.setOnClickListener(tvClickListener);
 
-        // Updates the fields with any text they may have held when tvClickListener's onClick()
-        // was called, as well as any new data passed from the previous activity.
+        // Updates the fields with any text they may have held when tvClickListener's onClick() was
+        // called, as well as any new data passed from the previous activity.
         if (activityOriginIntent.hasExtra(ORIGIN_TEXT)) {
             String originText = activityOriginIntent.getStringExtra(ORIGIN_TEXT);
             mOriginTextView.setText(originText);
@@ -145,11 +116,48 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             mCoordsDestination = activityOriginIntent.getDoubleArrayExtra(DESTINATION_COORDS);
 
         mClearButton = findViewById(R.id.b_clear);
-        mClearButton.setOnClickListener(clearButtonClickListener);
+        mClearButton.setOnClickListener(v -> {
+
+            mOriginTextView.setText(getText(R.string.tv_origin));
+            mDestinationTextView.setText(getText(R.string.tv_destination));
+            mClearedTvsFlag = true;
+        });
+
         mProgressSpinner = findViewById(R.id.progress_spinner);
+
         mFindRouteButton = findViewById(R.id.b_find_route);
-        mFindRouteButton.setOnClickListener(findRouteButtonClickListener);
-        mPolylineCoords = null;
+        mFindRouteButton.setOnClickListener(v -> {
+
+            if (mCoordsOrigin == null || mCoordsDestination == null || mClearedTvsFlag == true) {
+                StringBuilder messageBuilder = new StringBuilder();
+                if (mCoordsOrigin == null || mClearedTvsFlag == true)
+                    messageBuilder.append("Origin is empty. ");
+                if (mCoordsDestination == null || mClearedTvsFlag == true)
+                    messageBuilder.append("Destination is empty.");
+                String message = messageBuilder.toString();
+                Toast.makeText(MapsActivity.this, message, Toast.LENGTH_SHORT).show();
+                Log.w(TAG, "\"Find route\" button clicked with empty origin or destination TextViews.");
+                return;
+            }
+
+            mProgressSpinner.setVisibility(View.VISIBLE);
+            Log.i(TAG, "Progress spinner should be visible.");
+
+            LatLng origin = new LatLng(mCoordsOrigin[0], mCoordsOrigin[1]);
+            LatLng destination = new LatLng(mCoordsDestination[0], mCoordsDestination[1]);
+            showPolyline(origin, destination);
+            showChargingSites(origin, destination);
+
+            mProgressSpinner.setVisibility(View.INVISIBLE);
+            Log.i(TAG, "Progress spinner should be gone.");
+        });
+    }
+
+    @Override
+    protected void onDestroy() {
+
+        super.onDestroy();
+        PreferenceManager.getDefaultSharedPreferences(this).unregisterOnSharedPreferenceChangeListener(this);
     }
 
     /**
@@ -169,9 +177,84 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             LatLng currentLocCoords = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
             mMap.addMarker(new MarkerOptions().position(currentLocCoords));
             mMap.moveCamera(CameraUpdateFactory.newLatLng(currentLocCoords));
-            mMap.setOnMarkerClickListener(markerClickListener);
             mMap.getUiSettings().setZoomControlsEnabled(true);
+            mMap.setOnMarkerClickListener(marker -> {
+                marker.showInfoWindow();
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 15)); // Why isn't it zooming??
+                return true;
+            });
         }
+    }
+
+    /**
+     * Creates the options menu in the toolbar and sets the text to display in it.
+     * @param menu
+     * @return
+     */
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.toolbar_menu, menu);
+        mToolbar.setTitle(R.string.app_name);
+        return true;
+    }
+
+    /**
+     * Opens the settings activity if its icon is selected (currently the only option).
+     * @param item
+     * @return
+     */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        if (item.getItemId() == R.id.action_preferences) {
+            Intent intent = buildIntent(SettingsActivity.class, null);
+            startActivity(intent);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Updates the values of mDistance and mDistanceUnit if their corresponding preferences were changed.
+     * @param sharedPreferences
+     * @param key -- the key of the shared preference item
+     */
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+
+        if (key.equals(getString(R.string.pref_distance_key))) {
+            mDistance = sharedPreferences.getString(getString(R.string.pref_distance_key), "3");
+        }
+        if (key.equals(getString(R.string.pref_distance_unit_key)))
+            mDistanceUnit = sharedPreferences.getString(
+                    getString(R.string.pref_distance_unit_key),
+                    getString(R.string.pref_distance_unit_miles)
+            );
+    }
+
+    /**
+     * Helper method that builds an intent.
+     * @param cls -- the activity to open
+     * @param v -- the view with whose interaction triggered this method, if necessary
+     * @return a new intent
+     */
+    private Intent buildIntent(Class cls, View v) {
+
+        String tvOriginText = mOriginTextView.getText().toString();
+        String tvDestinationText = mDestinationTextView.getText().toString();
+
+        Intent intent = new Intent(MapsActivity.this, cls);
+        intent.putExtra(ORIGIN_TEXT, tvOriginText);
+        intent.putExtra(DESTINATION_TEXT, tvDestinationText);
+
+        if (v != null)
+            intent.putExtra(TEXTVIEW_ID, v.getId());
+        if (mCoordsOrigin != null)
+            intent.putExtra(ORIGIN_COORDS, mCoordsOrigin);
+        if (mCoordsDestination != null)
+            intent.putExtra(DESTINATION_COORDS, mCoordsDestination);
+        return intent;
     }
 
     /**
@@ -225,7 +308,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      */
     private void showChargingSites(LatLng origin, LatLng destination) {
 
-        URL url = ProxyApiUtil.buildUrlRoutePlanner(origin, destination);
+        URL url = ProxyApiUtil.buildUrlRoutePlanner(origin, destination, mDistance, mDistanceUnit);
         AsyncTask<URL, Void, String> future = new QueryTask().execute(url);
         String result;
         JSONArray json; // Is this necessary?

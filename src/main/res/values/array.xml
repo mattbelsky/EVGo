@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <array name="pref_distance_unit_labels">
+        <item>@string/pref_distance_unit_miles_label</item>
+        <item>@string/pref_distance_unit_km_label</item>
+    </array>
+
+    <array name="pref_distance_unit_values">
+        <item>@string/pref_distance_unit_miles</item>
+        <item>@string/pref_distance_unit_km</item>
+    </array>
+
+</resources>

@@ -29,10 +29,8 @@ public class ProxyApiUtil {
     private final static String LEVEL_ID_QUERY = "level_id";
     private final static String MAX_RESULTS_QUERY = "max_results";
 
-    /* Will be set in preferences. For now set as constants. Must be strings as appendQueryParameters() 
-     * only accepts string parameters. */
-    private final static String DISTANCE = "1";
-    private final static String DISTANCE_UNIT = "2";
+    // Will be set in preferences. For now set as constants. Must be strings as appendQueryParameters()
+    // only accepts string parameters.
     private final static String LEVEL_ID = "3";
     private final static String MAX_RESULTS = "3";
 
@@ -42,7 +40,7 @@ public class ProxyApiUtil {
      * @param destination
      * @return
      */
-    public static URL buildUrlRoutePlanner(LatLng origin, LatLng destination) {
+    public static URL buildUrlRoutePlanner(LatLng origin, LatLng destination, String distance, String distanceUnit) {
 
         String startLat = String.valueOf(origin.latitude);
         String startLng = String.valueOf(origin.longitude);
@@ -54,8 +52,8 @@ public class ProxyApiUtil {
                 .appendQueryParameter(START_LNG_PARAM_QUERY, startLng)
                 .appendQueryParameter(END_LAT_PARAM_QUERY, endLat)
                 .appendQueryParameter(END_LNG_PARAM_QUERY, endLng)
-                .appendQueryParameter(DISTANCE_QUERY, DISTANCE)
-                .appendQueryParameter(DISTANCE_UNIT_QUERY, DISTANCE_UNIT)
+                .appendQueryParameter(DISTANCE_QUERY, distance)
+                .appendQueryParameter(DISTANCE_UNIT_QUERY, distanceUnit)
                 .appendQueryParameter(LEVEL_ID_QUERY, LEVEL_ID)
                 .appendQueryParameter(MAX_RESULTS_QUERY, MAX_RESULTS)
                 .build();

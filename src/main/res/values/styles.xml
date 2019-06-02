@@ -8,14 +8,14 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
-    <style name="TextViews">
+    <style name="text_view">
         <item name="android:textSize">20sp</item>
         <item name="android:layout_marginLeft">5sp</item>
         <item name="android:layout_marginRight">5sp</item>
         <item name="android:textStyle">bold</item>
     </style>
 
-    <style name="EditTexts">
+    <style name="edit_text">
         <item name="android:textColor">#D3D3D3</item>
         <item name="android:layout_margin">5sp</item>
     </style>

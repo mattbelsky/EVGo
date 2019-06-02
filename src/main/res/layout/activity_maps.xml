@@ -33,14 +33,22 @@
     <!--app:layout_constraintBottom_toTopOf="@id/map"-->
     <!--/>-->
 
+    <android.support.v7.widget.Toolbar
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:elevation="4dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/linear_layout" />
 
     <LinearLayout
         android:id="@+id/linear_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/map">
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintBottom_toTopOf="@id/fragment_map">
 
         <TextView
             android:id="@+id/tv_origin"
@@ -70,7 +78,7 @@
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:map="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
-        android:id="@+id/map"
+        android:id="@+id/fragment_map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -78,6 +86,7 @@
         map:layout_constraintBottom_toBottomOf="parent"
         map:layout_constraintTop_toBottomOf="@id/linear_layout"
         map:layout_constraintVertical_weight="1"
+
         tools:context=".MapsActivity"
         tools:layout_editor_absoluteX="-435dp" />
 
@@ -91,9 +100,23 @@
         android:layout_marginRight="8dp"
         android:layout_marginBottom="20dp"
         android:text="Find Route"
-        app:layout_constraintBottom_toBottomOf="@+id/map"
+        app:layout_constraintBottom_toBottomOf="@+id/fragment_map"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <ProgressBar
+        android:id="@+id/progress_spinner"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/b_find_route"
+        app:layout_constraintEnd_toEndOf="@+id/fragment_map"
+        app:layout_constraintStart_toStartOf="@+id/fragment_map"
+        app:layout_constraintTop_toBottomOf="@+id/b_clear" />
 
     <Button
         android:id="@+id/b_clear"
@@ -107,6 +130,6 @@
         android:text="Clear All"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/map" />
+        app:layout_constraintTop_toTopOf="@+id/fragment_map" />
 
 </android.support.constraint.ConstraintLayout>

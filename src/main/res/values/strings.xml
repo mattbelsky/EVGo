@@ -4,4 +4,15 @@
     <string name="tv_origin">Origin</string>
     <string name="tv_destination">Destination</string>
     <string name="et_search_location">Location Name or Address</string>
+
+    <string name="pref_distance_default">0.0</string>
+    <string name="pref_distance_label">Distance to Search</string>
+    <string name="pref_distance_key" translatable="false">distance</string>
+
+    <string name="pref_distance_unit_label">Distance Unit</string>
+    <string name="pref_distance_unit_miles_label">miles</string>
+    <string name="pref_distance_unit_km_label">km</string>
+    <string name="pref_distance_unit_miles">2</string>
+    <string name="pref_distance_unit_km">1</string>
+    <string name="pref_distance_unit_key" translatable="false">distance_unit</string>
 </resources>
