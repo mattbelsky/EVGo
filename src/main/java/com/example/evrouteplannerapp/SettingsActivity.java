@@ -7,22 +7,15 @@ import android.support.v7.widget.Toolbar;
 
 public class SettingsActivity extends AppCompatActivity {
 
-    private Toolbar mToolbar;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
-        mToolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(mToolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
-    }
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
     }
 }

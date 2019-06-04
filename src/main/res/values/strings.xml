@@ -5,7 +5,7 @@
     <string name="tv_destination">Destination</string>
     <string name="et_search_location">Location Name or Address</string>
 
-    <string name="pref_distance_default">0.0</string>
+    <string name="pref_distance_default">3.0</string>
     <string name="pref_distance_label">Distance to Search</string>
     <string name="pref_distance_key" translatable="false">distance</string>
 
