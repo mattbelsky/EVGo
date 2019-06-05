@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceManager;
@@ -20,6 +21,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.evrouteplannerapp.models.ChargingSite;
+import com.example.evrouteplannerapp.models.Connections;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -27,6 +29,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.RoundCap;
@@ -43,6 +46,11 @@ import static com.example.evrouteplannerapp.Constants.DESTINATION_COORDS;
 import static com.example.evrouteplannerapp.Constants.DESTINATION_TEXT;
 import static com.example.evrouteplannerapp.Constants.ORIGIN_COORDS;
 import static com.example.evrouteplannerapp.Constants.ORIGIN_TEXT;
+import static com.example.evrouteplannerapp.Constants.SITE_ADDR_1;
+import static com.example.evrouteplannerapp.Constants.SITE_ADDR_2;
+import static com.example.evrouteplannerapp.Constants.SITE_COST;
+import static com.example.evrouteplannerapp.Constants.SITE_POWER_KW;
+import static com.example.evrouteplannerapp.Constants.SITE_TITLE;
 import static com.example.evrouteplannerapp.Constants.TEXTVIEW_ID;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,
@@ -63,6 +71,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private boolean mClearedTvsFlag = false;
     private String mDistance;
     private String mDistanceUnit;
+    // There are not likely enough charging sites along the route to necessitate a different data structure.
+    private ArrayList<ChargingSite> mChargingSites;
 
     private View.OnClickListener tvClickListener = v -> {
 
@@ -173,17 +183,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapReady(GoogleMap googleMap) {
 
         mMap = googleMap;
-        if (mCurrentLocation != null) {
-            LatLng currentLocCoords = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
-            mMap.addMarker(new MarkerOptions().position(currentLocCoords));
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(currentLocCoords));
-            mMap.getUiSettings().setZoomControlsEnabled(true);
-            mMap.setOnMarkerClickListener(marker -> {
-                marker.showInfoWindow();
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 15)); // Why isn't it zooming??
-                return true;
-            });
-        }
+        mMap.setOnMarkerClickListener(marker -> {
+
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 15)); // Why isn't it zooming??
+            // Pops up a new fragment listing more detailed information about the site indicated by the marker.
+            showSiteInfoFragment(marker);
+            return true;
+        });
+//        if (mCurrentLocation != null) {
+//            LatLng currentLocCoords = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
+//            mMap.addMarker(new MarkerOptions().position(currentLocCoords));
+//            mMap.moveCamera(CameraUpdateFactory.newLatLng(currentLocCoords));
+//            mMap.getUiSettings().setZoomControlsEnabled(true);
+//        }
     }
 
     /**
@@ -223,14 +235,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 
-        if (key.equals(getString(R.string.pref_distance_key))) {
-            mDistance = sharedPreferences.getString(getString(R.string.pref_distance_key), "3");
-        }
+        if (key.equals(getString(R.string.pref_distance_key)))
+            mDistance = sharedPreferences.getString(getString(R.string.pref_distance_key), "");
         if (key.equals(getString(R.string.pref_distance_unit_key)))
-            mDistanceUnit = sharedPreferences.getString(
-                    getString(R.string.pref_distance_unit_key),
-                    getString(R.string.pref_distance_unit_miles)
-            );
+            mDistanceUnit = sharedPreferences.getString(getString(R.string.pref_distance_unit_key), "");
     }
 
     /**
@@ -347,6 +355,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 mMap.addMarker(options);
             }
         }
+
+        mChargingSites = sites;
     }
 
     private ArrayList<LatLng> getCoordsFromPolyline(String polyline) {
@@ -382,5 +392,56 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
         return coords;
+    }
+
+    private void showSiteInfoFragment(Marker marker) {
+
+        ChargingSite site = null;
+        LatLng markerPos = marker.getPosition();
+
+        if (mChargingSites != null) {
+
+            for (ChargingSite s : mChargingSites) {
+                LatLng sitePos = new LatLng(
+                        s.getAddressInfo().getLatitude(),
+                        s.getAddressInfo().getLongitude()
+                );
+                if (markerPos.equals(sitePos)) {
+                    site = s;
+                    break;
+                }
+            }
+        }
+
+        // Gets the data needed for the popup fragment and passes it to it.
+        if (site != null) {
+
+            // Gets the data.
+            String title = site.getAddressInfo().getTitle();
+            String address1 = site.getAddressInfo().getAddressLine1();
+            String address2 = site.getAddressInfo().getAddressLine2();
+            Connections[] connections = site.getConnections();
+            int powerKW = 0;
+            for (Connections c : connections) {
+                if (c.getPowerKW() > powerKW)
+                    powerKW = c.getPowerKW();
+            }
+            String cost = site.getUsageCost();
+
+            // Packages the data within a bundle.
+            Bundle bundle = new Bundle();
+            bundle.putString(SITE_TITLE, title);
+            bundle.putString(SITE_ADDR_1, address1);
+            bundle.putString(SITE_ADDR_2, address2);
+            bundle.putString(SITE_POWER_KW, String.valueOf(powerKW));
+            bundle.putString(SITE_COST, cost);
+            SiteInfoFragment frag = new SiteInfoFragment();
+            frag.setArguments(bundle);
+
+            // Creates a fragment transaction, which replaces the existing fragment with the bundle.
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.replace(R.id.ll_site_info_frag_container, frag);
+            transaction.commit();
+        }
     }
 }
