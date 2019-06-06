@@ -1,11 +1,14 @@
 package com.example.evrouteplannerapp;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.location.Location;
+import android.net.http.HttpResponseCache;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -37,6 +40,7 @@ import com.google.android.gms.maps.model.RoundCap;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -66,6 +70,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Button mClearButton;
     private Button mFindRouteButton;
     private ProgressBar mProgressSpinner;
+    private Fragment mSiteInfo;
     private double[] mCoordsOrigin;
     private double[] mCoordsDestination;
     private boolean mClearedTvsFlag = false;
@@ -85,10 +90,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.fragment_map);
         mapFragment.getMapAsync(this);
+
+        // Sets up a cache for HTTP responses.
+        setUpHttpResponseCache();
 
         // Set up and get values from shared preferences. Sets defaults if nothing selected on preferences screen.
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -164,6 +173,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
+    protected void onStop() {
+
+        super.onStop();
+        HttpResponseCache cache = HttpResponseCache.getInstalled();
+        if (cache != null) {
+            cache.flush();
+        }
+    }
+
+    @Override
     protected void onDestroy() {
 
         super.onDestroy();
@@ -185,7 +204,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap = googleMap;
         mMap.setOnMarkerClickListener(marker -> {
 
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 15)); // Why isn't it zooming??
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 10));
             // Pops up a new fragment listing more detailed information about the site indicated by the marker.
             showSiteInfoFragment(marker);
             return true;
@@ -239,6 +258,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             mDistance = sharedPreferences.getString(getString(R.string.pref_distance_key), "");
         if (key.equals(getString(R.string.pref_distance_unit_key)))
             mDistanceUnit = sharedPreferences.getString(getString(R.string.pref_distance_unit_key), "");
+    }
+
+    /**
+     * Removes the fragment when back is pressed, if visible. Otherwise, behaves normally.
+     */
+    @Override
+    public void onBackPressed() {
+
+        if (mSiteInfo.isVisible()) {
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.remove(mSiteInfo);
+            transaction.commit();
+        } else
+            super.onBackPressed();
     }
 
     /**
@@ -394,6 +427,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         return coords;
     }
 
+    /**
+     * Displays the popup fragment presenting details about the charging site whose marker was clicked.
+     * @param marker -- the clicked marker
+     */
     private void showSiteInfoFragment(Marker marker) {
 
         ChargingSite site = null;
@@ -422,26 +459,40 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             String address2 = site.getAddressInfo().getAddressLine2();
             Connections[] connections = site.getConnections();
             int powerKW = 0;
+            // There may be several connections and several types of connections per site. This determines
+            // which has the max KW output.
             for (Connections c : connections) {
                 if (c.getPowerKW() > powerKW)
                     powerKW = c.getPowerKW();
             }
             String cost = site.getUsageCost();
 
-            // Packages the data within a bundle.
+            // Packages the data within a bundle and adds it to a new fragment object.
             Bundle bundle = new Bundle();
             bundle.putString(SITE_TITLE, title);
             bundle.putString(SITE_ADDR_1, address1);
             bundle.putString(SITE_ADDR_2, address2);
             bundle.putString(SITE_POWER_KW, String.valueOf(powerKW));
             bundle.putString(SITE_COST, cost);
-            SiteInfoFragment frag = new SiteInfoFragment();
-            frag.setArguments(bundle);
+            mSiteInfo = new SiteInfoFragment();
+            mSiteInfo.setArguments(bundle);
 
             // Creates a fragment transaction, which replaces the existing fragment with the bundle.
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            transaction.replace(R.id.ll_site_info_frag_container, frag);
+            transaction.replace(R.id.ll_site_info_frag_container, mSiteInfo);
             transaction.commit();
+        }
+    }
+
+    private void setUpHttpResponseCache() {
+
+        try {
+            Context context = getApplicationContext(); // Can't I just use "this"?
+            File httpCacheDir = new File(context.getCacheDir(), "http");
+            long httpCacheSize = 10 * 1024 * 1024; // 10 MiB
+            HttpResponseCache.install(httpCacheDir, httpCacheSize);
+        } catch (IOException e) {
+            Log.i(TAG, "HTTP response cache installation failed:" + e);
         }
     }
 }

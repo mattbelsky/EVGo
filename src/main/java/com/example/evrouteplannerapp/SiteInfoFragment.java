@@ -73,4 +73,11 @@ public class SiteInfoFragment extends Fragment {
             view.setVisibility(View.VISIBLE);
         }
     }
+
+    @Override
+    public void onDestroyView() {
+
+        super.onDestroyView();
+        getActivity().findViewById(R.id.b_find_route).setVisibility(View.VISIBLE);
+    }
 }
