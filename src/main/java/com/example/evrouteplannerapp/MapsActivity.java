@@ -267,9 +267,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onBackPressed() {
 
         if (mSiteInfo.isVisible()) {
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            transaction.remove(mSiteInfo);
-            transaction.commit();
+            getSupportFragmentManager().beginTransaction()
+                    .remove(mSiteInfo)
+                    .commit();
         } else
             super.onBackPressed();
     }
@@ -478,9 +478,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             mSiteInfo.setArguments(bundle);
 
             // Creates a fragment transaction, which replaces the existing fragment with the bundle.
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            transaction.replace(R.id.ll_site_info_frag_container, mSiteInfo);
-            transaction.commit();
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.ll_site_info_frag_container, mSiteInfo)
+                    .commit();
         }
     }
 

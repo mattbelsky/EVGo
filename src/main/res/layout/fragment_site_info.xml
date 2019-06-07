@@ -9,6 +9,7 @@
     tools:visibility="visible">
 
     <android.support.v7.widget.CardView
+        android:id="@+id/cardView"
         android:layout_width="395dp"
         android:layout_height="match_parent"
         android:layout_marginStart="8dp"
@@ -35,7 +36,6 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginLeft="8dp"
                 android:layout_marginTop="8dp"
-                android:text="Name"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toTopOf="@id/tv_site_address_1"
@@ -48,7 +48,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_marginLeft="8dp"
-                android:text="Address line 1"
                 app:layout_constraintBottom_toTopOf="@id/tv_site_address_2"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tv_site_name" />
@@ -59,12 +58,11 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_marginLeft="8dp"
-                android:text="Address line 2"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tv_site_address_1" />
 
             <ImageView
-                android:id="@+id/imageView"
+                android:id="@+id/img_power"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:layout_marginStart="8dp"
@@ -80,10 +78,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginLeft="16dp"
-                android:text="Power KW"
-                app:layout_constraintBottom_toBottomOf="@+id/imageView"
-                app:layout_constraintStart_toEndOf="@+id/imageView"
-                app:layout_constraintTop_toTopOf="@+id/imageView" />
+                app:layout_constraintBottom_toBottomOf="@+id/img_power"
+                app:layout_constraintStart_toEndOf="@+id/img_power"
+                app:layout_constraintTop_toTopOf="@+id/img_power" />
 
             <TextView
                 android:id="@+id/tv_cost"
@@ -93,11 +90,22 @@
                 android:layout_marginLeft="8dp"
                 android:layout_marginEnd="8dp"
                 android:layout_marginRight="8dp"
-                android:text="$XXXX"
                 app:layout_constraintBottom_toBottomOf="@+id/tv_power_kw"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/tv_power_kw"
                 app:layout_constraintTop_toTopOf="@+id/tv_power_kw" />
+
+            <Button
+                android:id="@+id/b_navigate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginTop="16dp"
+                android:background="#16791B"
+                android:text="Navigate"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/img_power" />
 
         </android.support.constraint.ConstraintLayout>
     </android.support.v7.widget.CardView>
