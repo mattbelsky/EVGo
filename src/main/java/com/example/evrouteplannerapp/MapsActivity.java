@@ -9,7 +9,6 @@ import android.net.http.HttpResponseCache;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceManager;
@@ -58,7 +57,7 @@ import static com.example.evrouteplannerapp.Constants.SITE_TITLE;
 import static com.example.evrouteplannerapp.Constants.TEXTVIEW_ID;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,
-        SharedPreferences.OnSharedPreferenceChangeListener {
+        SharedPreferences.OnSharedPreferenceChangeListener, GoogleMap.OnMarkerClickListener {
 
     private static final String TAG = "MapsActivity";
 
@@ -202,19 +201,27 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapReady(GoogleMap googleMap) {
 
         mMap = googleMap;
-        mMap.setOnMarkerClickListener(marker -> {
-
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 10));
-            // Pops up a new fragment listing more detailed information about the site indicated by the marker.
-            showSiteInfoFragment(marker);
-            return true;
-        });
+        mMap.setOnMarkerClickListener(this);
 //        if (mCurrentLocation != null) {
 //            LatLng currentLocCoords = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
 //            mMap.addMarker(new MarkerOptions().position(currentLocCoords));
 //            mMap.moveCamera(CameraUpdateFactory.newLatLng(currentLocCoords));
 //            mMap.getUiSettings().setZoomControlsEnabled(true);
 //        }
+    }
+
+    /**
+     * Called when a marker on the map is clicked.
+     * @param marker
+     * @return
+     */
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 10));
+        // Pops up a new fragment listing more detailed information about the site indicated by the marker.
+        showSiteInfoFragment(marker);
+        return true;
     }
 
     /**
