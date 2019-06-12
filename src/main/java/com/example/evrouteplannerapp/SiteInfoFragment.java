@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,7 +18,7 @@ import static com.example.evrouteplannerapp.Constants.SITE_COST;
 import static com.example.evrouteplannerapp.Constants.SITE_POWER_KW;
 import static com.example.evrouteplannerapp.Constants.SITE_TITLE;
 
-public class SiteInfoFragment extends Fragment {
+public class SiteInfoFragment extends Fragment implements ViewTreeObserver.OnGlobalLayoutListener {
 
     private final String TAG = "SiteInfoFragment";
 
@@ -69,7 +68,7 @@ public class SiteInfoFragment extends Fragment {
             mAddress1TextView.setText(mAddress1);
             mAddress2TextView.setText(mAddress2);
             mPowerKWTextView.setText(mPowerKW + " KW");
-            mCostTextView.setText("$" + mCost); // TODO Add functionality for switching currencies.
+            mCostTextView.setText(mCost);
 
             // Hides the "Find Route" button. This is necessary because view.bringToFront() apparently
             // doesn't work for views that have children.
@@ -83,20 +82,22 @@ public class SiteInfoFragment extends Fragment {
              */
             getView().setVisibility(View.VISIBLE);
             mStateChangedFlag = true;
-            ViewTreeObserver vto = view.getViewTreeObserver();
-            vto.addOnGlobalLayoutListener(() -> {
+            view.getViewTreeObserver().addOnGlobalLayoutListener(this);
+        }
+    }
 
-                float start = getActivity().findViewById(R.id.cl_maps_activity).getHeight();
-                if (mStateChangedFlag) {
+    @Override
+    public void onGlobalLayout() {
 
-                    float end = getView().getHeight();
-                    ObjectAnimator animator = ObjectAnimator.ofFloat(getView(), "translationY", start, start - end);
-                    animator.setInterpolator(new DecelerateInterpolator());
-                    animator.setDuration(500);
-                    animator.start();
-                    mStateChangedFlag = false;
-                }
-            });
+        float start = getActivity().findViewById(R.id.cl_maps_activity).getHeight();
+        if (mStateChangedFlag) {
+
+            float end = getView().getHeight();
+            ObjectAnimator animator = ObjectAnimator.ofFloat(getView(), "translationY", start, start - end);
+            animator.setInterpolator(new DecelerateInterpolator());
+            animator.setDuration(500);
+            animator.start();
+            mStateChangedFlag = false;
         }
     }
 
@@ -105,5 +106,6 @@ public class SiteInfoFragment extends Fragment {
 
         super.onDestroyView();
         getActivity().findViewById(R.id.b_find_route).setVisibility(View.VISIBLE);
+        getView().getViewTreeObserver().removeOnGlobalLayoutListener(this);
     }
 }
