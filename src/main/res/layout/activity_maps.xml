@@ -136,9 +136,8 @@
     <LinearLayout
         android:id="@+id/ll_site_info_frag_container"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="vertical"
-        android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="@+id/fragment_map"
         app:layout_constraintEnd_toEndOf="@+id/fragment_map"
         app:layout_constraintStart_toStartOf="parent">

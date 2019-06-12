@@ -1,5 +1,6 @@
 package com.example.evrouteplannerapp;
 
+import android.animation.ObjectAnimator;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -8,6 +9,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.TextView;
 
 import static com.example.evrouteplannerapp.Constants.SITE_ADDR_1;
@@ -70,6 +72,13 @@ public class SiteInfoFragment extends Fragment {
             // Hides the "Find Route" button. This is necessary because view.bringToFront() apparently
             // doesn't work for views that have children.
             getActivity().findViewById(R.id.b_find_route).setVisibility(View.GONE);
+
+            float start = getActivity().findViewById(R.id.cl_maps_activity).getHeight();
+            float end = start * 0.3f;
+            ObjectAnimator animator = ObjectAnimator.ofFloat(view, "translationY", start, end);
+            animator.setInterpolator(new DecelerateInterpolator());
+            animator.setDuration(500);
+            animator.start();
             view.setVisibility(View.VISIBLE);
         }
     }
