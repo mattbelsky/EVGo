@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.TextView;
 
@@ -32,6 +33,7 @@ public class SiteInfoFragment extends Fragment {
     private String mAddress2;
     private String mPowerKW;
     private String mCost;
+    private boolean mStateChangedFlag;
 
     @Nullable
     @Override
@@ -44,7 +46,8 @@ public class SiteInfoFragment extends Fragment {
         
         super.onViewCreated(view, savedInstanceState);
         Bundle bundle = this.getArguments();
-        boolean flag = false;
+        mStateChangedFlag = false;
+        boolean incompleteDataFlag = false;
         try {
             mTitleTextView = view.findViewById(R.id.tv_site_name);
             mAddress1TextView = view.findViewById(R.id.tv_site_address_1);
@@ -58,11 +61,10 @@ public class SiteInfoFragment extends Fragment {
             mPowerKW = bundle.getString(SITE_POWER_KW);
             mCost = bundle.getString(SITE_COST);
         } catch (NullPointerException e) {
-            flag = true;
-            Log.w(TAG, "Incomplete data set sent to this fragment.");
+            incompleteDataFlag = true;
         }
 
-        if (flag == false) {
+        if (incompleteDataFlag == false) {
             mTitleTextView.setText(mTitle);
             mAddress1TextView.setText(mAddress1);
             mAddress2TextView.setText(mAddress2);
@@ -73,13 +75,28 @@ public class SiteInfoFragment extends Fragment {
             // doesn't work for views that have children.
             getActivity().findViewById(R.id.b_find_route).setVisibility(View.GONE);
 
-            float start = getActivity().findViewById(R.id.cl_maps_activity).getHeight();
-            float end = start * 0.3f;
-            ObjectAnimator animator = ObjectAnimator.ofFloat(view, "translationY", start, end);
-            animator.setInterpolator(new DecelerateInterpolator());
-            animator.setDuration(500);
-            animator.start();
-            view.setVisibility(View.VISIBLE);
+            /* Observer's listener is triggered when the view's state changes, in this case, when visibility
+             * changes from GONE to VISIBLE. The state is altered here and a flag set to true so that,
+             * in this specific scenario, this object is given time to construct the view and measure
+             * the dimensions of its children. The view's height will be 0 unless the listener is triggered
+             * in this way.
+             */
+            getView().setVisibility(View.VISIBLE);
+            mStateChangedFlag = true;
+            ViewTreeObserver vto = view.getViewTreeObserver();
+            vto.addOnGlobalLayoutListener(() -> {
+
+                float start = getActivity().findViewById(R.id.cl_maps_activity).getHeight();
+                if (mStateChangedFlag) {
+
+                    float end = getView().getHeight();
+                    ObjectAnimator animator = ObjectAnimator.ofFloat(getView(), "translationY", start, start - end);
+                    animator.setInterpolator(new DecelerateInterpolator());
+                    animator.setDuration(500);
+                    animator.start();
+                    mStateChangedFlag = false;
+                }
+            });
         }
     }
 
