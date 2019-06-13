@@ -63,7 +63,7 @@ public class SiteInfoFragment extends Fragment implements ViewTreeObserver.OnGlo
             incompleteDataFlag = true;
         }
 
-        if (incompleteDataFlag == false) {
+        if (!incompleteDataFlag) {
             mTitleTextView.setText(mTitle);
             mAddress1TextView.setText(mAddress1);
             mAddress2TextView.setText(mAddress2);
@@ -74,11 +74,11 @@ public class SiteInfoFragment extends Fragment implements ViewTreeObserver.OnGlo
             // doesn't work for views that have children.
             getActivity().findViewById(R.id.b_find_route).setVisibility(View.GONE);
 
-            /* Observer's listener is triggered when the view's state changes, in this case, when visibility
+            /* Observer's listener is called when the view's state changes, in this case, when visibility
              * changes from GONE to VISIBLE. The state is altered here and a flag set to true so that,
              * in this specific scenario, this object is given time to construct the view and measure
-             * the dimensions of its children. The view's height will be 0 unless the listener is triggered
-             * in this way.
+             * the dimensions of its children before attempting to animate the view. The view's height
+             * will be 0 unless the listener is triggered in this way.
              */
             getView().setVisibility(View.VISIBLE);
             mStateChangedFlag = true;
@@ -86,12 +86,19 @@ public class SiteInfoFragment extends Fragment implements ViewTreeObserver.OnGlo
         }
     }
 
+    /**
+     * Called every time the layout's state is changed. When the flag, manually set, is true, animates
+     * this fragment's parent view to slide up from the bottom of the screen. To do this, gets the height
+     * of the parent activity -- more specifically, the height of the constraint layout encompassing
+     * the entire screen -- and the height of the view containing all the elements of this fragment,
+     * and defines the animation so that the view only slides up as far as it is tall.
+     */
     @Override
     public void onGlobalLayout() {
 
-        float start = getActivity().findViewById(R.id.cl_maps_activity).getHeight();
         if (mStateChangedFlag) {
 
+            float start = getActivity().findViewById(R.id.cl_maps_activity).getHeight();
             float end = getView().getHeight();
             ObjectAnimator animator = ObjectAnimator.ofFloat(getView(), "translationY", start, start - end);
             animator.setInterpolator(new DecelerateInterpolator());
@@ -106,6 +113,8 @@ public class SiteInfoFragment extends Fragment implements ViewTreeObserver.OnGlo
 
         super.onDestroyView();
         getActivity().findViewById(R.id.b_find_route).setVisibility(View.VISIBLE);
+
+        // Must remove listener at this point, otherwise the program crashes.
         getView().getViewTreeObserver().removeOnGlobalLayoutListener(this);
     }
 }
