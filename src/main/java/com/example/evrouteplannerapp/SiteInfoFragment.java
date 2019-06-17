@@ -1,6 +1,10 @@
 package com.example.evrouteplannerapp;
 
 import android.animation.ObjectAnimator;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -10,15 +14,22 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.Button;
 import android.widget.TextView;
 
+import com.google.android.gms.maps.model.LatLng;
+
+import java.util.List;
+
+import static com.example.evrouteplannerapp.Constants.DESTINATION_COORDS;
 import static com.example.evrouteplannerapp.Constants.SITE_ADDR_1;
 import static com.example.evrouteplannerapp.Constants.SITE_ADDR_2;
 import static com.example.evrouteplannerapp.Constants.SITE_COST;
 import static com.example.evrouteplannerapp.Constants.SITE_POWER_KW;
 import static com.example.evrouteplannerapp.Constants.SITE_TITLE;
 
-public class SiteInfoFragment extends Fragment implements ViewTreeObserver.OnGlobalLayoutListener {
+public class SiteInfoFragment extends Fragment implements ViewTreeObserver.OnGlobalLayoutListener,
+        View.OnClickListener {
 
     private final String TAG = "SiteInfoFragment";
 
@@ -27,6 +38,8 @@ public class SiteInfoFragment extends Fragment implements ViewTreeObserver.OnGlo
     private TextView mAddress2TextView;
     private TextView mPowerKWTextView;
     private TextView mCostTextView;
+    private Button mNavigateButton;
+    private LatLng mCoords;
     private String mTitle;
     private String mAddress1;
     private String mAddress2;
@@ -54,6 +67,8 @@ public class SiteInfoFragment extends Fragment implements ViewTreeObserver.OnGlo
             mPowerKWTextView = view.findViewById(R.id.tv_power_kw);
             mCostTextView = view.findViewById(R.id.tv_cost);
 
+            double[] coords = bundle.getDoubleArray(DESTINATION_COORDS);
+            mCoords = new LatLng(coords[0], coords[1]);
             mTitle = bundle.getString(SITE_TITLE);
             mAddress1 = bundle.getString(SITE_ADDR_1);
             mAddress2 = bundle.getString(SITE_ADDR_2);
@@ -84,6 +99,31 @@ public class SiteInfoFragment extends Fragment implements ViewTreeObserver.OnGlo
             mStateChangedFlag = true;
             view.getViewTreeObserver().addOnGlobalLayoutListener(this);
         }
+
+        mNavigateButton = view.findViewById(R.id.b_navigate);
+        mNavigateButton.setOnClickListener(this);
+    }
+
+    /**
+     * When the navigate button is clicked, opens the default maps app with a marker at the supplied location.
+     * @param v
+     */
+    @Override
+    public void onClick(View v) {
+
+        String lat = String.valueOf(mCoords.latitude);
+        String lng = String.valueOf(mCoords.longitude);
+        Uri location = Uri.parse("geo:0,0?q=" + lat + "," + lng + "(" + mTitle + ")");
+        Intent mapIntent = new Intent(Intent.ACTION_VIEW, location);
+
+        // Verify it resolves
+        PackageManager packageManager = getActivity().getPackageManager();
+        List<ResolveInfo> activities = packageManager.queryIntentActivities(mapIntent, 0);
+        boolean isIntentSafe = activities.size() > 0;
+
+        // Start an activity if it's safe
+        if (isIntentSafe)
+            startActivity(mapIntent);
     }
 
     /**

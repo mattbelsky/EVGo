@@ -461,6 +461,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (site != null) {
 
             // Gets the data.
+            double[] coords = {
+                    site.getAddressInfo().getLatitude(),
+                    site.getAddressInfo().getLongitude()
+            };
             String title = site.getAddressInfo().getTitle();
             String address1 = site.getAddressInfo().getAddressLine1();
             String address2 = site.getAddressInfo().getAddressLine2();
@@ -476,6 +480,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             // Packages the data within a bundle and adds it to a new fragment object.
             Bundle bundle = new Bundle();
+            bundle.putDoubleArray(DESTINATION_COORDS, coords);
             bundle.putString(SITE_TITLE, title);
             bundle.putString(SITE_ADDR_1, address1);
             bundle.putString(SITE_ADDR_2, address2);

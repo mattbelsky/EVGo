@@ -71,7 +71,7 @@ public class LocationSearchActivity extends AppCompatActivity
             mCoordsDestination = activityOriginIntent.getDoubleArrayExtra(DESTINATION_COORDS);
 
         mSearchEditText = findViewById(R.id.et_search_location);
-        mSearchButton = findViewById(R.id.floatingActionButton);
+        mSearchButton = findViewById(R.id.b_search_location);
         mSearchButton.setOnClickListener(searchButtonClickListener);
         mListAddressesRecyclerView = findViewById(R.id.rv_location_results);
 
