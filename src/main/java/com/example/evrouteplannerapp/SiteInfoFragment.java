@@ -113,8 +113,10 @@ public class SiteInfoFragment extends Fragment implements ViewTreeObserver.OnGlo
 
         String lat = String.valueOf(mCoords.latitude);
         String lng = String.valueOf(mCoords.longitude);
-        Uri location = Uri.parse("geo:0,0?q=" + lat + "," + lng + "(" + mTitle + ")");
+//        Uri location = Uri.parse("geo:0,0?q=" + lat + "," + lng + "(" + mTitle + ")");
+        Uri location = Uri.parse("google.navigation:q=" + lat + "," + lng + "&mode=d");
         Intent mapIntent = new Intent(Intent.ACTION_VIEW, location);
+        mapIntent.setPackage("com.google.android.apps.maps");
 
         // Verify it resolves
         PackageManager packageManager = getActivity().getPackageManager();
