@@ -105,7 +105,8 @@ public class SiteInfoFragment extends Fragment implements ViewTreeObserver.OnGlo
     }
 
     /**
-     * When the navigate button is clicked, opens the default maps app with a marker at the supplied location.
+     * When the navigate button is clicked, attempts to start Google navigation to the location of the marker.
+     * If Google nav is not availabe, opened the default map app at the location.
      * @param v
      */
     @Override
@@ -113,19 +114,32 @@ public class SiteInfoFragment extends Fragment implements ViewTreeObserver.OnGlo
 
         String lat = String.valueOf(mCoords.latitude);
         String lng = String.valueOf(mCoords.longitude);
-//        Uri location = Uri.parse("geo:0,0?q=" + lat + "," + lng + "(" + mTitle + ")");
-        Uri location = Uri.parse("google.navigation:q=" + lat + "," + lng + "&mode=d");
-        Intent mapIntent = new Intent(Intent.ACTION_VIEW, location);
+        Uri locationGoogleNav = Uri.parse("google.navigation:q=" + lat + "," + lng + "&mode=d");
+        Uri locationMap = Uri.parse("geo:0,0?q=" + lat + "," + lng + "(" + mTitle + ")");
+        Intent mapIntent = new Intent(Intent.ACTION_VIEW, locationGoogleNav);
         mapIntent.setPackage("com.google.android.apps.maps");
+
+        // Start an activity if it's safe
+        if (isIntentSafe(mapIntent))
+            startActivity(mapIntent);
+        else {
+            mapIntent = new Intent(Intent.ACTION_VIEW, locationMap);
+            if (isIntentSafe(mapIntent))
+                startActivity(mapIntent);
+        }
+    }
+
+    /**
+     * Verfies whether there is a program that can handle this implicit intent.
+     * @param mapIntent
+     * @return
+     */
+    private boolean isIntentSafe(Intent mapIntent) {
 
         // Verify it resolves
         PackageManager packageManager = getActivity().getPackageManager();
         List<ResolveInfo> activities = packageManager.queryIntentActivities(mapIntent, 0);
-        boolean isIntentSafe = activities.size() > 0;
-
-        // Start an activity if it's safe
-        if (isIntentSafe)
-            startActivity(mapIntent);
+        return activities.size() > 0;
     }
 
     /**
