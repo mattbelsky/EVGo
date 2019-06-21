@@ -5,7 +5,7 @@
     android:id="@+id/cl_maps_activity"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF"
+    android:background="@color/background_dark"
     android:orientation="vertical">
 
     <!--<fragment-->
@@ -34,45 +34,40 @@
     <!--app:layout_constraintBottom_toTopOf="@id/map"-->
     <!--/>-->
 
-    <android.support.v7.widget.Toolbar
-        xmlns:android="http://schemas.android.com/apk/res/android"
+    <android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/background_dark"
         android:elevation="4dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/linear_layout" />
+        app:layout_constraintBottom_toTopOf="@id/linear_layout"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
         android:id="@+id/linear_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/background_dark"
         android:orientation="vertical"
-        app:layout_constraintTop_toBottomOf="@id/toolbar"
-        app:layout_constraintBottom_toTopOf="@id/fragment_map">
+        android:padding="5dp"
+        app:layout_constraintBottom_toTopOf="@id/fragment_map"
+        app:layout_constraintTop_toBottomOf="@id/toolbar">
 
         <TextView
             android:id="@+id/tv_origin"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:text="@string/tv_origin"
-            android:background="@layout/rounded_corner_textview"/>
+            style="@style/text_view"/>
 
-        <View
-            android:id="@+id/divider"
+        <Space
             android:layout_width="match_parent"
-            android:layout_height="1dp"
+            android:layout_height="5dp"
             android:layout_weight="1"
-            android:background="?android:attr/listDivider" />
+            android:background="#00FFFFFF"/>
 
         <TextView
             android:id="@+id/tv_destination"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:text="@string/tv_destination"
-            android:background="@layout/rounded_corner_textview"/>
+            style="@style/text_view"/>
 
     </LinearLayout>
 
@@ -88,7 +83,7 @@
         android:text="Clear All"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/fragment_map" />
+        app:layout_constraintTop_toTopOf="@+id/fragment_map"/>
 
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:map="http://schemas.android.com/apk/res-auto"
