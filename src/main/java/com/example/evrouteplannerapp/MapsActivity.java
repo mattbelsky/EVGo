@@ -8,6 +8,7 @@ import android.location.Location;
 import android.net.http.HttpResponseCache;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -81,7 +82,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private View.OnClickListener tvClickListener = v -> {
 
         Intent intent = buildIntent(LocationSearchActivity.class, v);
-        startActivity(intent);
+        startActivity(intent, ActivityOptionsCompat.makeSceneTransitionAnimation(this,
+                findViewById(R.id.ll_textbox_parent), "textboxParent").toBundle());
     };
 
     @Override

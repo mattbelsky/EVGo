@@ -40,11 +40,11 @@
         android:layout_height="wrap_content"
         android:background="@color/background_dark"
         android:elevation="4dp"
-        app:layout_constraintBottom_toTopOf="@id/linear_layout"
+        app:layout_constraintBottom_toTopOf="@id/ll_textbox_parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
-        android:id="@+id/linear_layout"
+        android:id="@+id/ll_textbox_parent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/background_dark"
@@ -94,7 +94,7 @@
         android:layout_height="0dp"
         android:orientation="vertical"
         map:layout_constraintBottom_toBottomOf="parent"
-        map:layout_constraintTop_toBottomOf="@id/linear_layout"
+        map:layout_constraintTop_toBottomOf="@id/ll_textbox_parent"
         map:layout_constraintVertical_weight="1"
 
         tools:context=".MapsActivity"
