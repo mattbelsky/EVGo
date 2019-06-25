@@ -40,36 +40,42 @@
         android:layout_height="wrap_content"
         android:background="@color/background_dark"
         android:elevation="4dp"
-        app:layout_constraintBottom_toTopOf="@id/ll_textbox_parent"
+        android:transitionName="@string/toolbar"
+        app:layout_constraintBottom_toTopOf="@id/cs_textbox_parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <LinearLayout
-        android:id="@+id/ll_textbox_parent"
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/cs_textbox_parent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/background_dark"
         android:orientation="vertical"
         android:padding="5dp"
+        android:transitionName="@string/textbox_parent"
         app:layout_constraintBottom_toTopOf="@id/fragment_map"
         app:layout_constraintTop_toBottomOf="@id/toolbar">
 
         <TextView
             android:id="@+id/tv_origin"
             android:text="@string/tv_origin"
+            app:layout_constraintTop_toTopOf="parent"
             style="@style/text_view"/>
 
         <Space
+            android:id="@+id/space"
             android:layout_width="match_parent"
             android:layout_height="5dp"
             android:layout_weight="1"
-            android:background="#00FFFFFF"/>
+            android:background="#00FFFFFF"
+            app:layout_constraintTop_toBottomOf="@id/tv_origin"/>
 
         <TextView
             android:id="@+id/tv_destination"
             android:text="@string/tv_destination"
-            style="@style/text_view"/>
+            app:layout_constraintTop_toBottomOf="@id/space"
+            style="@style/text_view" />
 
-    </LinearLayout>
+    </android.support.constraint.ConstraintLayout>
 
     <Button
         android:id="@+id/b_clear"
@@ -94,7 +100,7 @@
         android:layout_height="0dp"
         android:orientation="vertical"
         map:layout_constraintBottom_toBottomOf="parent"
-        map:layout_constraintTop_toBottomOf="@id/ll_textbox_parent"
+        map:layout_constraintTop_toBottomOf="@id/cs_textbox_parent"
         map:layout_constraintVertical_weight="1"
 
         tools:context=".MapsActivity"

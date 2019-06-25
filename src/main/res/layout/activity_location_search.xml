@@ -14,14 +14,16 @@
         android:layout_height="wrap_content"
         android:background="@color/background_dark"
         android:elevation="4dp"
+        android:transitionName="@string/toolbar"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <LinearLayout
-        android:id="@+id/ll_textbox_parent"
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/cs_textbox_parent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="5dp"
+        android:transitionName="@string/textbox_parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar">
 
         <EditText
@@ -31,8 +33,9 @@
             android:layout_height="wrap_content"
             android:background="@layout/text_box"
             android:hint="@string/et_search_location"
-            android:inputType="text" />
-    </LinearLayout>
+            android:inputType="text"
+            app:layout_constraintTop_toTopOf="parent"/>
+    </android.support.constraint.ConstraintLayout>
 
     <android.support.constraint.ConstraintLayout
         android:id="@+id/cs_spacer"
@@ -42,7 +45,7 @@
         android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/ll_textbox_parent">
+        app:layout_constraintTop_toBottomOf="@id/cs_textbox_parent">
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/b_search_location"
