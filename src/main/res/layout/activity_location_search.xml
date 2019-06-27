@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background_dark"
     android:orientation="vertical"
     tools:context=".LocationSearchActivity">
 
@@ -18,12 +17,14 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <android.support.constraint.ConstraintLayout
-        android:id="@+id/cs_textbox_parent"
+        android:id="@+id/cs_textbox_parent_search"
+        android:background="@color/background_dark"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="5dp"
-        android:transitionName="@string/textbox_parent"
+        android:transitionName="@string/textbox_parent_search"
+        android:animateLayoutChanges="true"
         app:layout_constraintTop_toBottomOf="@+id/toolbar">
 
         <EditText
@@ -45,7 +46,7 @@
         android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/cs_textbox_parent">
+        app:layout_constraintTop_toBottomOf="@id/cs_textbox_parent_search">
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/b_search_location"

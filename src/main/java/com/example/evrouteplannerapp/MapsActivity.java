@@ -7,30 +7,19 @@ import android.graphics.Color;
 import android.location.Location;
 import android.net.http.HttpResponseCache;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.util.Pair;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.Toolbar;
-import android.transition.AutoTransition;
-import android.transition.ChangeBounds;
-import android.transition.ChangeTransform;
-import android.transition.Explode;
-import android.transition.Fade;
-import android.transition.Slide;
-import android.transition.TransitionSet;
-import android.transition.TransitionValues;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
-import android.view.animation.BounceInterpolator;
-import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -95,15 +84,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private View.OnClickListener tvClickListener = v -> {
 
         Intent intent = buildIntent(LocationSearchActivity.class, v);
-        View toolbar = findViewById(R.id.toolbar);
-        View textbox = findViewById(R.id.cs_textbox_parent);
-        ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
+        Bundle options = ActivityOptionsCompat.makeSceneTransitionAnimation(
                 this,
-                Pair.create(toolbar, toolbar.getTransitionName()),
-                Pair.create(textbox, textbox.getTransitionName())
-        );
-//        ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(this);
-        startActivity(intent, options.toBundle());
+                Pair.create(mToolbar, ViewCompat.getTransitionName(mToolbar)),
+                Pair.create(findViewById(R.id.cs_textbox_parent_maps), getString(R.string.textbox_parent_search))
+        ).toBundle();
+        startActivity(intent, options);
     };
 
     @Override
@@ -315,7 +301,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         String tvOriginText = mOriginTextView.getText().toString();
         String tvDestinationText = mDestinationTextView.getText().toString();
 
-        Intent intent = new Intent(MapsActivity.this, cls);
+        Intent intent = new Intent(this, cls);
         intent.putExtra(ORIGIN_TEXT, tvOriginText);
         intent.putExtra(DESTINATION_TEXT, tvDestinationText);
 

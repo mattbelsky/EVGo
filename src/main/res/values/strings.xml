@@ -17,5 +17,6 @@
     <string name="pref_distance_unit_key" translatable="false">distance_unit</string>
 
     <string name="toolbar">toolbar</string>
-    <string name="textbox_parent">textboxParent</string>
+    <string name="textbox_parent_maps">textboxParentMaps</string>
+    <string name="textbox_parent_search">textboxParentSearch</string>
 </resources>
