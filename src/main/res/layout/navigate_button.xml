@@ -9,9 +9,9 @@
         android:right="10dp"
         android:top="5dp"
         android:bottom="5dp"/>
-    <solid android:color="@color/offWhite"/>
-    <corners android:radius="5dp"/>
+    <solid android:color="@color/darkGreen"/>
+    <corners android:radius="1dp"/>
     <stroke
-        android:width="3dp"
-        android:color="@color/lightGreen"/>
+        android:width="1dp"
+        android:color="@color/offWhite"/>
 </shape>

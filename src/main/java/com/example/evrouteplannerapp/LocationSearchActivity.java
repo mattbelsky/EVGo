@@ -3,13 +3,20 @@ package com.example.evrouteplannerapp;
 import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
+import android.os.Build;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.util.Pair;
+import android.support.v4.view.ViewCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.transition.AutoTransition;
 import android.view.View;
+import android.view.animation.AccelerateInterpolator;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -29,6 +36,7 @@ public class LocationSearchActivity extends AppCompatActivity
 
     private static final String TAG = "LocationSearchActivity";
 
+    private Toolbar mToolbar;
     private EditText mSearchEditText;
     private FloatingActionButton mSearchButton;
     private RecyclerView mListAddressesRecyclerView;
@@ -58,6 +66,10 @@ public class LocationSearchActivity extends AppCompatActivity
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_location_search);
+
+        mToolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(mToolbar);
+        ActionBar actionBar = getSupportActionBar();
 
         Intent activityOriginIntent = getIntent();
         if (activityOriginIntent.hasExtra(TEXTVIEW_ID))
@@ -125,7 +137,12 @@ public class LocationSearchActivity extends AppCompatActivity
         if (mMapsTvDestinationText != null)
             intent.putExtra(DESTINATION_TEXT, mMapsTvDestinationText);
 
-        startActivity(intent);
+        Bundle options = ActivityOptionsCompat.makeSceneTransitionAnimation(
+                this,
+                Pair.create(mToolbar, ViewCompat.getTransitionName(mToolbar)),
+                Pair.create(findViewById(R.id.cs_textbox_parent_search), getString(R.string.textbox_parent_maps))
+        ).toBundle();
+        startActivity(intent, options);
     }
 
     /**

@@ -9,10 +9,12 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 import android.widget.TextView;
@@ -60,6 +62,7 @@ public class SiteInfoFragment extends Fragment implements ViewTreeObserver.OnGlo
         Bundle bundle = this.getArguments();
         mStateChangedFlag = false;
         boolean incompleteDataFlag = false;
+
         try {
             mTitleTextView = view.findViewById(R.id.tv_site_name);
             mAddress1TextView = view.findViewById(R.id.tv_site_address_1);
@@ -72,18 +75,39 @@ public class SiteInfoFragment extends Fragment implements ViewTreeObserver.OnGlo
             mTitle = bundle.getString(SITE_TITLE);
             mAddress1 = bundle.getString(SITE_ADDR_1);
             mAddress2 = bundle.getString(SITE_ADDR_2);
-            mPowerKW = bundle.getString(SITE_POWER_KW);
             mCost = bundle.getString(SITE_COST);
+            mPowerKW = bundle.getString(SITE_POWER_KW);
         } catch (NullPointerException e) {
             incompleteDataFlag = true;
         }
 
         if (!incompleteDataFlag) {
+
+            String noDataProvided = "No data provided.";
             mTitleTextView.setText(mTitle);
             mAddress1TextView.setText(mAddress1);
-            mAddress2TextView.setText(mAddress2);
-            mPowerKWTextView.setText(mPowerKW + " KW");
-            mCostTextView.setText(mCost);
+
+            if (mAddress2 == null || mAddress2.trim().equals(""))
+                mAddress2TextView.setVisibility(View.GONE);
+            else
+                mAddress2TextView.setText(mAddress2);
+
+            if (mCost == null || mCost.trim().equals(""))
+                mCostTextView.setText(noDataProvided);
+            else {
+                mCostTextView.setText(mCost);
+                if (mCost.length() > 45)
+                    mCostTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+                else if (mCost.length() > 70) {
+                    String abridgedText = mCost.substring(0, 67) + "...";
+                    mCostTextView.setText(abridgedText);
+                }
+            }
+
+            if (mPowerKW == null)
+                mPowerKWTextView.setText(noDataProvided);
+            else
+                mPowerKWTextView.setText(mPowerKW + " KW");
 
             // Hides the "Find Route" button. This is necessary because view.bringToFront() apparently
             // doesn't work for views that have children.

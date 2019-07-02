@@ -5,4 +5,7 @@
     <color name="colorAccent">#D81B60</color>
     <color name="background_dark">#282828</color>
     <color name="floating_action_button">#C51162</color>
+    <color name="offWhite">#F0F0F0</color>
+    <color name="lightGreen">#AEEA00</color>
+    <color name="darkGreen">#263D07</color>
 </resources>

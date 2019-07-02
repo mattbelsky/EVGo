@@ -45,6 +45,7 @@
 
     <android.support.constraint.ConstraintLayout
         android:id="@+id/cs_textbox_parent_maps"
+        android:elevation="4dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/background_dark"
@@ -78,6 +79,7 @@
 
     <Button
         android:id="@+id/b_clear"
+        android:elevation="4dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -117,6 +119,7 @@
 
     <Button
         android:id="@+id/b_find_route"
+        android:elevation="4dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
