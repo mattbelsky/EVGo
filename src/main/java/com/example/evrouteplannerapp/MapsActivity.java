@@ -268,7 +268,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         if (item.getItemId() == R.id.action_preferences) {
             Intent intent = buildIntent(SettingsActivity.class, null);
-            startActivity(intent);
+            Bundle options = ActivityOptionsCompat.makeSceneTransitionAnimation(this, mToolbar,
+                    getString(R.string.toolbar)).toBundle();
+            startActivity(intent, options);
             return true;
         }
         return false;
