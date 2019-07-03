@@ -1,0 +1,2 @@
+# EVGo
+Android app built on EV Route Planner REST API. Users can choose a starting and ending destination, and the app will display the route on a Google map fragment along with the locations of charging stations nearby. It will bring up a small fragment showing information about the site when a map marker is clicked, and can users to navigate to said site. Additionally, users can specify how far from their intended route they wish to find charging stations.
