@@ -1,6 +1,5 @@
 package com.example.evrouteplannerapp;
 
-import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -21,7 +20,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.animation.AccelerateInterpolator;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -182,6 +180,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
     }
 
+    /**
+     * Keeps the "Find Route" button from appearing if a site info fragment is visible.
+     */
+    @Override
+    protected void onPostResume() {
+
+        super.onPostResume();
+        if (mSiteInfo != null)
+            if (mSiteInfo.isVisible())
+                mFindRouteButton.setVisibility(View.GONE);
+    }
+
     @Override
     protected void onStop() {
 
@@ -222,7 +232,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     /**
-     * Called when a marker on the map is clicked.
+     * Animates the camera, moving it to the position of the clicked marker and zooming in.
      * @param marker
      * @return
      */

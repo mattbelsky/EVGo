@@ -14,7 +14,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 import android.widget.TextView;
@@ -55,6 +54,11 @@ public class SiteInfoFragment extends Fragment implements ViewTreeObserver.OnGlo
         return inflater.inflate(R.layout.fragment_site_info, container, false);
     }
 
+    /**
+     * It is recommended to place all initiation related logic post-inflation in this method.
+     * @param view
+     * @param savedInstanceState
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         
@@ -130,7 +134,7 @@ public class SiteInfoFragment extends Fragment implements ViewTreeObserver.OnGlo
 
     /**
      * When the navigate button is clicked, attempts to start Google navigation to the location of the marker.
-     * If Google nav is not availabe, opened the default map app at the location.
+     * If Google nav is not available, opens the default map app at the location.
      * @param v
      */
     @Override

@@ -9,12 +9,13 @@
 
     <android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/toolbar"
+        style="@style/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/background_dark"
         android:elevation="4dp"
         android:transitionName="@string/toolbar"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:titleTextColor="@color/offWhite" />
 
     <android.support.constraint.ConstraintLayout
         android:id="@+id/cs_textbox_parent_search"
@@ -51,14 +52,15 @@
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/b_search_location"
-            android:elevation="8dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:clickable="true"
+            android:elevation="8dp"
             android:src="@drawable/ic_search"
             app:backgroundTint="@color/floating_action_button"
+            app:elevation="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
     </android.support.constraint.ConstraintLayout>

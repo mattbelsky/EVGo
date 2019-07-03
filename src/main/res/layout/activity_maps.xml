@@ -35,13 +35,14 @@
 
     <android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/toolbar"
+        style="@style/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/background_dark"
         android:elevation="4dp"
         android:transitionName="@string/toolbar"
         app:layout_constraintBottom_toTopOf="@id/cs_textbox_parent_maps"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:titleTextColor="@color/offWhite" />
 
     <android.support.constraint.ConstraintLayout
         android:id="@+id/cs_textbox_parent_maps"
